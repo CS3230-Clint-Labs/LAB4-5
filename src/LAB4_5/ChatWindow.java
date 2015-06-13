@@ -20,9 +20,15 @@ public class ChatWindow
     protected JScrollPane chatInputScroll;
     protected JButton submitChat;
     private boolean clearTextField = true;
+    private String serverip;
+    private int portnum;
 
     public ChatWindow()
     {
+        //creating default settings for testing to local host
+        this.serverip = "localhost";
+        this.portnum = 8989;
+
         //set up window defaults
         this.window = new JFrame();
         this.window.setTitle("CS3230 Chat Client");
@@ -118,7 +124,9 @@ public class ChatWindow
 
         //pack the window to size and update the screen.
         this.window.pack();
+        updateConnectionInfo();
         updateScreen();
+
     }
 
     private void clearTextField()
@@ -144,10 +152,26 @@ public class ChatWindow
     {
         if(!this.chatInput.getText().equals("") && !this.chatInput.getText().equals(null))
         {
-            this.chatDisplay.append("\nme: " + this.chatInput.getText() + "\n");
+            this.chatDisplay.append("me: " + this.chatInput.getText() + "\n\n");
             this.chatInput.setText("");
             updateScreen();
         }
 
+    }
+
+    public void addServerText(String servertext)
+    {
+        this.chatDisplay.append(serverip + ": " + servertext + "\n\n");
+        //updateScreen();
+        this.chatDisplay.updateUI();
+    }
+
+    public void updateConnectionInfo()
+    {
+        this.chatUserDisplay.setText("Connection Information:\n\n" +
+                "Server: " + serverip + "\n"
+                + "Port#: " + portnum + "\n"
+                + "Listening on Port: 8989");
+        updateScreen();
     }
 }
