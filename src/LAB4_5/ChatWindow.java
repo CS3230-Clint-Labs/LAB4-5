@@ -3,6 +3,7 @@ package LAB4_5;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 
 /**
  * @author Clinton Fowler
@@ -12,6 +13,7 @@ import java.awt.event.*;
 public class ChatWindow
 {
     protected JFrame window;
+    protected JFrame serverInfoWindow;
     protected JPanel background;
     protected JOptionPane inputPane;
     protected JMenuBar menuBar;
@@ -29,9 +31,13 @@ public class ChatWindow
     private boolean clearTextField = true;
     private String serverip;
     private int portnum;
+    private ChatConnection connectChat;
 
     public ChatWindow()
     {
+        Runtime.getRuntime().addShutdownHook(new Thread(){public void run(){
+                    connectChat.closeConnection();
+                }});
         // Default IP/Port
         this.serverip = "localhost";
         this.portnum = 8989;
@@ -40,57 +46,73 @@ public class ChatWindow
         this.window = new JFrame();
         this.window.setTitle("CS3230 Chat Client");
         this.window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        this.window.setSize(new Dimension(800,840));
+        this.window.setSize(new Dimension(800, 840));
         this.window.setVisible(true);
+
+        // Initialize JFrame(serverInfoWindow) and Set Parameters
+        this.serverInfoWindow = new JFrame();
+        this.serverInfoWindow.setPreferredSize(new Dimension(100, 200));
+        this.serverInfoWindow.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        this.serverInfoWindow.setVisible(false);
 
         // Initialize JPanel(background) and Set Parameters
         this.background = new JPanel();
         this.background.setBackground(Color.red);
         this.background.setLayout(new BorderLayout());
-        this.background.setPreferredSize(new Dimension(790,640));
+        this.background.setPreferredSize(new Dimension(790, 640));
         this.background.setVisible(true);
 
         // Initialize JOptionPane (inputPane) and Set Parameters
         this.inputPane = new JOptionPane();
-        this.inputPane.setPreferredSize(new Dimension(790, 640));
+        this.inputPane.setPreferredSize(new Dimension(100, 200));
         this.inputPane.setVisible(true);
+        this.serverInfoWindow.add(this.inputPane);
 
         // Initialize JMenuBar(menuBar) and Set Parameters
         this.menuBar = new JMenuBar();
-        this.window.setSize(new Dimension(790,80));
-        this.window.setVisible(true);
 
         // Initialize JMenu (menu) and Set Parameters
         this.menu = new JMenu("Menu");
-        this.menu.setSize(new Dimension(100,80));
+        this.menu.setSize(new Dimension(100, 80));
         this.menu.setVisible(true);
 
         // Initialize JMenuItems (for menu) and Set Parameters
         this.createConnection = new JMenuItem("Create Connection");
         this.createConnection.setSize(new Dimension(100, 100));
         this.createConnection.setVisible(true);
-
-            // Add mouse listener. On mouse click, remove text.
-            this.createConnection.addMouseListener(new MouseAdapter(){
+        this.createConnection.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                serverInfoWindow.setVisible(true);
+                startChatConnection();
+            }
+        });
+        //this can be removed. leaving for reference right now. may try a couple things with the option pane itself.
+        /*this.createConnection.addMouseListener(new MouseAdapter(){
 
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    inputPane.setSize(new Dimension(100,200));
-                    inputPane.setVisible(true);
+                    //inputPane.setSize(new Dimension(100, 200));
                     inputPane.showInputDialog(inputPane, "Enter server IP address.", "IP address");
+                    serverInfoWindow.setVisible(true);
+                    inputPane.updateUI();
                 }});
-
+*/
         this.exit = new JMenuItem("Exit");
         this.exit.setSize(new Dimension(100,100));
         this.exit.setVisible(true);
+        this.exit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(connectChat != null)
+                {
+                    connectChat.closeConnection();
+                }
+                window.dispose();
+            }
+        });
 
-//            // Add mouse listener. On mouse click, remove text.
-//            this.chatInput.addMouseListener(new MouseAdapter(){
 //
-//            @Override
-//            public void mouseClicked(MouseEvent e) {
-//                clearTextField();
-//            }});
 
         // Initialize JTextArea(chatDisplay) and Set Parameters
         this.chatDisplay = new JTextArea();
@@ -125,7 +147,7 @@ public class ChatWindow
         this.userinputPanel.setVisible(true);
         this.userinputPanel.setLayout(new BorderLayout());
 
-        // Initialze JButton(submitChat) w/ActionListener that calls addText on button click.
+        // Initialize JButton(submitChat) w/ActionListener that calls addText on button click.
         this.submitChat = new JButton("Submit");
         this.submitChat.addActionListener(new ActionListener(){
 
@@ -226,6 +248,7 @@ public class ChatWindow
     {
         if(!this.chatInput.getText().equals("") && !this.chatInput.getText().equals(null))
         {
+            connectChat.sendMessage(this.chatInput.getText());
             this.chatDisplay.append("me: " + this.chatInput.getText() + "\n\n");
             this.chatInput.setText("");
             updateScreen();
@@ -233,6 +256,7 @@ public class ChatWindow
 
     }
 
+    // not sure this is being used right now. may modify or remove all together
     // Display Server Information.
     public void addServerText(String servertext)
     {
@@ -241,8 +265,8 @@ public class ChatWindow
         this.chatDisplay.updateUI();
     }
 
-    //
-    public void updateConnectionInfo()
+    //will call this after we get the input connection information working.
+    private void updateConnectionInfo()
     {
         this.chatUserDisplay.setText("Connection Information:\n\n" +
                 "Server: " + serverip + "\n"
@@ -250,4 +274,20 @@ public class ChatWindow
                 + "Listening on Port: 8989");
         updateScreen();
     }
+
+    //Method for starting the chat connection in a new thread.
+    private void startChatConnection()
+    {
+        try {
+            connectChat = new ChatConnection(serverip, portnum, this);
+            Thread startup = new Thread(connectChat);
+            startup.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //will need to add another menu item for closing the connection to close all the sockets so we can close the connection.
+    //need to add some checks to the connection portion and see if the port is already active. if so, close it so we can establish a new connection.
+    //if i get a wild hare going, i may set up the client to establish multiple connections on different ports, allow simultaneous chats in the same window
 }
