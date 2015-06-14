@@ -1,0 +1,10 @@
+# Created by Tyler Cazier
+
+# IntelliJ project files to ignore
+.idea
+out
+*.gitignore
+*.iml
+*.class
+gen
+

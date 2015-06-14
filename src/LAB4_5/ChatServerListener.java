@@ -54,7 +54,7 @@ public class ChatServerListener implements Runnable
                         }
                     } catch (NullPointerException e)
                     {
-
+                        e.printStackTrace();
                     }
                 }
             }
