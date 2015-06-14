@@ -2,10 +2,11 @@ package LAB4_5;
 
 import com.sun.corba.se.spi.activation.Server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
 
 /**
  * Created by Clinton on 6/12/2015.
@@ -16,7 +17,7 @@ public class ChatServerListener implements Runnable
     protected int port;
     protected String server;
     protected ServerSocket serverSocket;
-    protected Scanner input;
+    protected BufferedReader input;
 
 
     public ChatServerListener(String serverip, int portnum, ChatWindow win) throws IOException
@@ -38,11 +39,11 @@ public class ChatServerListener implements Runnable
             {
                 Socket incomingConnection = serverSocket.accept();
 
-                this.input = new Scanner(incomingConnection.getInputStream());
+                this.input = new BufferedReader(new InputStreamReader(incomingConnection.getInputStream()));
                 while(incomingConnection.isConnected() && !incomingConnection.isClosed())
                 {
                     try {
-                        String incomingMessage = input.nextLine();
+                        String incomingMessage = input.readLine();
                         if (incomingMessage.equals("exit"))
                         {
                             incomingConnection.close();
