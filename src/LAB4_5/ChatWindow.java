@@ -12,7 +12,6 @@ import java.awt.event.*;
 public class ChatWindow
 {
     protected JFrame window;
-    protected JFrame dialog;
     protected JPanel background;
     protected JOptionPane inputPane;
     protected JMenuBar menuBar;
@@ -44,13 +43,6 @@ public class ChatWindow
         this.window.setSize(new Dimension(800,840));
         this.window.setVisible(true);
 
-        // Initialize JFrame(inputDialog) and Set Parameters
-        this.dialog = new JFrame();
-        this.dialog.setTitle("CS3230 Chat Client");
-        this.dialog.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        this.dialog.setPreferredSize(new Dimension(200, 150));
-        this.dialog.setVisible(false);
-
         // Initialize JPanel(background) and Set Parameters
         this.background = new JPanel();
         this.background.setBackground(Color.red);
@@ -59,7 +51,6 @@ public class ChatWindow
         this.background.setVisible(true);
 
         // Initialize JOptionPane (inputPane) and Set Parameters
-        this.inputPane = new JOptionPane("Set server IP and port number.");
 
         // Initialize JMenuBar(menuBar) and Set Parameters
         this.menuBar = new JMenuBar();
@@ -76,29 +67,9 @@ public class ChatWindow
         this.createConnection.setSize(new Dimension(100, 100));
         this.createConnection.setVisible(true);
 
-            // Add mouse listener. On mouse click, remove text.
-            this.createConnection.addMouseListener(new MouseAdapter(){
-
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    dialog.setSize(new Dimension(100,200));
-                    dialog.pack();
-                    dialog.setVisible(true);
-                    inputPane.showInputDialog(dialog, null, "Enter Server IP address:");
-                    dialog.setVisible(true);
-                }});
-
         this.exit = new JMenuItem("Exit");
         this.exit.setSize(new Dimension(100,100));
         this.exit.setVisible(true);
-
-//            // Add mouse listener. On mouse click, remove text.
-//            this.chatInput.addMouseListener(new MouseAdapter(){
-//
-//            @Override
-//            public void mouseClicked(MouseEvent e) {
-//                clearTextField();
-//            }});
 
         // Initialize JTextArea(chatDisplay) and Set Parameters
         this.chatDisplay = new JTextArea();
@@ -127,7 +98,7 @@ public class ChatWindow
         this.chatUserScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         this.chatUserScroll.setVisible(true);
 
-        // Unused.
+        //
         this.userinputPanel = new JPanel();
         this.userinputPanel.setBackground(Color.BLACK);
         this.userinputPanel.setVisible(true);
@@ -184,7 +155,6 @@ public class ChatWindow
 
         //Add components to the window
         this.window.add(this.background);
-        this.dialog.add(this.inputPane);
         this.background.add(this.menuBar, BorderLayout.NORTH);
         this.background.add(this.chatScroll);
         this.background.add(this.chatUserScroll, BorderLayout.WEST);
