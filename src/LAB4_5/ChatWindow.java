@@ -36,7 +36,13 @@ public class ChatWindow
     public ChatWindow()
     {
         Runtime.getRuntime().addShutdownHook(new Thread(){public void run(){
-                    connectChat.closeConnection();
+                    try
+                    {
+                        connectChat.closeConnection();
+                    }catch(Exception e)
+                    {
+
+                    }
                 }});
         // Default IP/Port
         this.serverip = "localhost";
@@ -103,12 +109,16 @@ public class ChatWindow
         this.exit.setVisible(true);
         this.exit.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                if(connectChat != null)
+            public void actionPerformed(ActionEvent ev) {
+                try
                 {
                     connectChat.closeConnection();
+                }catch (Exception ex)
+                {
+
                 }
                 window.dispose();
+                Runtime.getRuntime().exit(0);
             }
         });
 
@@ -248,7 +258,14 @@ public class ChatWindow
     {
         if(!this.chatInput.getText().equals("") && !this.chatInput.getText().equals(null))
         {
-            connectChat.sendMessage(this.chatInput.getText());
+            try
+            {
+                connectChat.sendMessage(this.chatInput.getText());
+            }catch(Exception e)
+            {
+                this.chatDisplay.append("***\nSYSTEM: Currently no active chat Connections.\n" +
+                                        "Please use the menu and select Start Connection\n***\n\n");
+            }
             this.chatDisplay.append("me: " + this.chatInput.getText() + "\n\n");
             this.chatInput.setText("");
             updateScreen();

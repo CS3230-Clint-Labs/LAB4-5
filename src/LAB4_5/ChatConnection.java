@@ -35,7 +35,7 @@ public class ChatConnection implements Runnable
             this.serverSocket = new ServerSocket(this.port);
 
             //continuously listen for a incoming connection
-            while(true)
+            while(!this.serverSocket.isClosed())
             {
                 this.incomingConnection = serverSocket.accept();
 
@@ -67,7 +67,7 @@ public class ChatConnection implements Runnable
         }
     }
 
-    public void sendMessage(String message)
+    public void sendMessage(String message) throws IOException
     {
         try
         {
@@ -75,7 +75,7 @@ public class ChatConnection implements Runnable
             this.sendUserMessage.write(message);
         }catch(IOException e)
         {
-
+            throw e;
         }
 
     }
