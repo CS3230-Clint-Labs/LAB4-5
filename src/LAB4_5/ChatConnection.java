@@ -86,6 +86,9 @@ public class ChatConnection implements Runnable
         {
             this.input.close();
             this.sendUserMessage.close();
+            this.incomingConnection.shutdownInput();
+            this.incomingConnection.shutdownOutput();
+            this.incomingConnection.close();
             this.serverSocket.close();
         }catch(Exception e)
         {
