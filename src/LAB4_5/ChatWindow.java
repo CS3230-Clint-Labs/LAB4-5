@@ -41,7 +41,7 @@ public class ChatWindow
                         connectChat.closeConnection();
                     }catch(Exception e)
                     {
-
+                        //don't need to worry about this error.
                     }
                 }});
         // Default IP/Port
@@ -129,7 +129,7 @@ public class ChatWindow
                     connectChat.closeConnection();
                 }catch (Exception ex)
                 {
-
+                    //don't care about this Exception
                 }
                 window.dispose();
                 Runtime.getRuntime().exit(0);

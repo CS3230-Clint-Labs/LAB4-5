@@ -7,7 +7,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
- * Created by Clinton on 6/12/2015.
+ * Authored by Clinton on 6/12/2015.
+ * Edited by Tyler Cazier
+ *
  */
 public class ChatConnection implements Runnable
 {
@@ -55,7 +57,7 @@ public class ChatConnection implements Runnable
                         }
                     } catch (NullPointerException e)
                     {
-                        e.printStackTrace();
+                        incomingConnection.close();
                     }
                 }
             }
@@ -73,6 +75,7 @@ public class ChatConnection implements Runnable
         {
             this.sendUserMessage = new BufferedWriter(new OutputStreamWriter(this.incomingConnection.getOutputStream()));
             this.sendUserMessage.write(message);
+            this.sendUserMessage.flush();
         }catch(IOException e)
         {
             throw e;
@@ -92,7 +95,7 @@ public class ChatConnection implements Runnable
             this.serverSocket.close();
         }catch(Exception e)
         {
-
+            //don't care about this exception
         }
     }
 }
