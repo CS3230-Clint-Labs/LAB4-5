@@ -287,15 +287,14 @@ public class ChatWindow
 
     }
 
-    // not sure this is being used right now. may modify or remove all together
-    // Display Server Information.
+    // Display Input from Server.
     public void addServerText(String servertext)
     {
         this.chatDisplay.append(serverip + ": " + servertext + "\n\n");
         updateScreen();
     }
 
-    //will call this after we get the input connection information working.
+    //Updates Server information on the side of the window.
     private void updateConnectionInfo()
     {
         this.chatUserDisplay.setText("Connection Information:\n\n" +
@@ -311,6 +310,8 @@ public class ChatWindow
             connectChat = new ChatConnection(serverip, portnum, this);
             Thread startup = new Thread(connectChat);
             startup.start();
+            //this is where i tried to connect to the server IP. still can't get it to work.
+            //connectChat.runConnection();
         } catch (IOException e) {
             e.printStackTrace();
         }

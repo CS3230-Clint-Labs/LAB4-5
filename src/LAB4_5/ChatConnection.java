@@ -3,8 +3,7 @@ package LAB4_5;
 import com.sun.corba.se.spi.activation.Server;
 
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 
 /**
  * Authored by Clinton on 6/12/2015.
@@ -19,6 +18,7 @@ public class ChatConnection implements Runnable
     protected ServerSocket serverSocket;
     protected BufferedReader input;
     protected Socket incomingConnection;
+    protected Socket OutgoingConnection;
     protected BufferedWriter sendUserMessage;
 
 
@@ -31,42 +31,56 @@ public class ChatConnection implements Runnable
 
     @Override
     public void run()
+{
+    try
+    {
+        this.serverSocket = new ServerSocket(this.port);
+
+        //continuously listen for a incoming connection
+        while(!this.serverSocket.isClosed())
+        {
+            this.incomingConnection = serverSocket.accept();
+
+            this.input = new BufferedReader(new InputStreamReader(incomingConnection.getInputStream()));
+            while(incomingConnection.isConnected() && !incomingConnection.isClosed())
+            {
+                try {
+                    String incomingMessage = input.readLine();
+                    if (incomingMessage.equals("exit"))
+                    {
+                        incomingConnection.close();
+                        break;
+                    }
+                    if (!incomingMessage.equals(null))
+                    {
+                        window.addServerText(incomingMessage);
+                    }
+                } catch (NullPointerException e)
+                {
+                    incomingConnection.close();
+                }
+            }
+        }
+
+
+    }catch (Exception e)
+    {
+        //don't care
+    }
+}
+
+    public void runConnection()
     {
         try
         {
-            this.serverSocket = new ServerSocket(this.port);
-
-            //continuously listen for a incoming connection
-            while(!this.serverSocket.isClosed())
-            {
-                this.incomingConnection = serverSocket.accept();
-
-                this.input = new BufferedReader(new InputStreamReader(incomingConnection.getInputStream()));
-                while(incomingConnection.isConnected() && !incomingConnection.isClosed())
-                {
-                    try {
-                        String incomingMessage = input.readLine();
-                        if (incomingMessage.equals("exit"))
-                        {
-                            incomingConnection.close();
-                            break;
-                        }
-                        if (!incomingMessage.equals(null))
-                        {
-                            window.addServerText(incomingMessage);
-                        }
-                    } catch (NullPointerException e)
-                    {
-                        incomingConnection.close();
-                    }
-                }
-            }
-
+            this.OutgoingConnection = new Socket();
+            OutgoingConnection.connect(new InetSocketAddress(this.server, this.port), 10000);
 
         }catch (Exception e)
         {
-
+            System.out.println(e.getStackTrace());
         }
+
     }
 
     public void sendMessage(String message) throws IOException
@@ -89,6 +103,7 @@ public class ChatConnection implements Runnable
         {
             this.input.close();
             this.sendUserMessage.close();
+            this.OutgoingConnection.close();
             this.incomingConnection.shutdownInput();
             this.incomingConnection.shutdownOutput();
             this.incomingConnection.close();
