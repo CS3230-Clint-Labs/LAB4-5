@@ -76,6 +76,7 @@ public class ChatConnection implements Runnable
     @Override
     public void run()
     {
+
         try
         {
 //            OutgoingConnection = new Socket(this.server, this.port);
