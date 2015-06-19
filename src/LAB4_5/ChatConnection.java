@@ -16,10 +16,10 @@ public class ChatConnection implements Runnable
     protected int port;
     protected String server;
     protected ServerSocket serverSocket;
-    protected BufferedReader input;
+    protected DataInputStream input;
     protected Socket incomingConnection;
     protected Socket OutgoingConnection;
-    protected BufferedWriter sendUserMessage;
+    protected DataOutputStream sendUserMessage;
 
 
     public ChatConnection(String serverip, int portnum, ChatWindow win) throws IOException
@@ -29,46 +29,86 @@ public class ChatConnection implements Runnable
         this.server = serverip;
     }
 
+
+//    @Override
+//    public void run()
+//    {
+//        try
+//        {
+////            this.serverSocket = new ServerSocket(this.port);
+//            serverSocket = new ServerSocket(8080);
+//
+//            //continuously listen for a incoming connection
+////            while(!this.serverSocket.isClosed())
+////            {
+//                this.incomingConnection = serverSocket.accept();
+//
+//                this.input = new DataInputStream(incomingConnection.getInputStream());
+//            this.sendUserMessage = new DataOutputStream(incomingConnection.getOutputStream());
+//                while(incomingConnection.isConnected() && !incomingConnection.isClosed())
+//                {
+//                    try {
+//                        String incomingMessage = input.readUTF();
+//                        if (incomingMessage.equals("exit"))
+//                        {
+//                            incomingConnection.close();
+//                            break;
+//                        }
+//                        if (!incomingMessage.equals(null))
+//                        {
+//                            window.addServerText(incomingMessage);
+//                        }
+//                    } catch (NullPointerException e)
+//                    {
+//                        incomingConnection.close();
+//                    }
+//                }
+////            }
+//
+//
+//        }catch (Exception e)
+//        {
+//            //don't care
+//        }
+//    }
+
+
     @Override
     public void run()
-{
-    try
     {
-        this.serverSocket = new ServerSocket(this.port);
-
-        //continuously listen for a incoming connection
-        while(!this.serverSocket.isClosed())
+        try
         {
-            this.incomingConnection = serverSocket.accept();
-
-            this.input = new BufferedReader(new InputStreamReader(incomingConnection.getInputStream()));
-            while(incomingConnection.isConnected() && !incomingConnection.isClosed())
+//            OutgoingConnection = new Socket(this.server, this.port);
+            OutgoingConnection = new Socket(this.server,this.port);
+            this.input = new DataInputStream(OutgoingConnection.getInputStream());
+            this.sendUserMessage = new DataOutputStream(OutgoingConnection.getOutputStream());
+            while(OutgoingConnection.isConnected() && !OutgoingConnection.isClosed())
             {
-                try {
-                    String incomingMessage = input.readLine();
+                try
+                {
+                    String incomingMessage = input.readUTF();
                     if (incomingMessage.equals("exit"))
                     {
-                        incomingConnection.close();
+                        OutgoingConnection.close();
                         break;
                     }
                     if (!incomingMessage.equals(null))
                     {
                         window.addServerText(incomingMessage);
                     }
-                } catch (NullPointerException e)
+                }catch (NullPointerException e)
                 {
-                    incomingConnection.close();
+                    OutgoingConnection.close();
                 }
             }
         }
-
-
-    }catch (Exception e)
-    {
-        //don't care
+        catch (Exception e)
+        {
+            //don't care
+        }
     }
-}
 
+    /*
     public void runConnection()
     {
         try
@@ -82,13 +122,13 @@ public class ChatConnection implements Runnable
         }
 
     }
+    */
 
     public void sendMessage(String message) throws IOException
     {
         try
         {
-            this.sendUserMessage = new BufferedWriter(new OutputStreamWriter(this.incomingConnection.getOutputStream()));
-            this.sendUserMessage.write(message);
+            this.sendUserMessage.writeUTF(message);
             this.sendUserMessage.flush();
         }catch(IOException e)
         {
