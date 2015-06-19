@@ -36,13 +36,7 @@ public class ChatWindow
     public ChatWindow()
     {
         Runtime.getRuntime().addShutdownHook(new Thread(){public void run(){
-                    try
-                    {
-                        connectChat.closeConnection();
-                    }catch(Exception e)
-                    {
-                        //don't need to worry about this error.
-                    }
+                    connectChat.closeConnection();
                 }});
         // Default IP/Port
         this.serverip = "localhost";
@@ -107,17 +101,7 @@ public class ChatWindow
                 startChatConnection();
             }
         });
-        //this can be removed. leaving for reference right now. may try a couple things with the option pane itself.
-        /*this.createConnection.addMouseListener(new MouseAdapter(){
 
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    //inputPane.setSize(new Dimension(100, 200));
-                    inputPane.showInputDialog(inputPane, "Enter server IP address.", "IP address");
-                    serverInfoWindow.setVisible(true);
-                    inputPane.updateUI();
-                }});
-*/
         this.exit = new JMenuItem("Exit");
         this.exit.setSize(new Dimension(100,100));
         this.exit.setVisible(true);
@@ -232,9 +216,6 @@ public class ChatWindow
         this.userinputPanel.add(this.submitChat, BorderLayout.WEST);
         this.userinputPanel.add(this.chatInputScroll, BorderLayout.CENTER);
 
-        // New thread for input/output.
-//        Thread listener = new Thread(this);
-//        listener.start();
 
         //pack the window to size and update the screen.
         this.window.pack();
