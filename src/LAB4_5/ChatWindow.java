@@ -32,12 +32,21 @@ public class ChatWindow {
     private int portNum; // String for storing port number.  Port used for incoming/outgoing streams. Server/client.
     private ChatConnection connectChat; // A new chat connection for exchanging messages.
 
+    /**
+     * Constructor: Constructs a ChatWindow object. This is the only defined constructor.
+     */
     public ChatWindow() {
+
+        // Initializes a shutdown hook (thread) on this ChatWindow's runtime.  On application close, regardless of
+        // normal exit or application interrupt, a thread will start and execute on the below code.
+        // Thread closes all incoming and outgoing streams, connections, and sockets.
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 connectChat.closeConnection();
             }
         });
+
+
         // Default IP/Port
         this.serverIP = "localhost";
         this.portNum = 8989;
@@ -52,8 +61,8 @@ public class ChatWindow {
         // Initialize JFrame(userServerInputWindow) and Set Parameters
         this.userServerInputWindow = new JFrame();
         this.userServerInputWindow.setPreferredSize(new Dimension(100, 200));
-        this.userServerInputWindow.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        this.userServerInputWindow.setVisible(false);
+        this.userServerInputWindow.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE); // Hide frame.
+        this.userServerInputWindow.setVisible(false); // Should not be visible.
 
         // Initialize JPanel(mainBackground) and Set Parameters
         this.mainBackground = new JPanel();
@@ -66,7 +75,6 @@ public class ChatWindow {
         this.userServerInputPane = new JOptionPane();
         this.userServerInputPane.setPreferredSize(new Dimension(100, 200));
         this.userServerInputPane.setVisible(true);
-        this.userServerInputWindow.add(this.userServerInputPane);
 
         // Initialize JMenuBar(mainMenuBar) and Set Parameters
         this.mainMenuBar = new JMenuBar();
@@ -76,22 +84,34 @@ public class ChatWindow {
         this.mainMenu.setSize(new Dimension(100, 80));
         this.mainMenu.setVisible(true);
 
-        // Initialize JMenuItems (for mainMenu) and Set Parameters
+        // Initialize JMenuItem(mainMenuCreateConnection). This menu item allows the user to establish a new IP/port.
         this.mainMenuCreateConnection = new JMenuItem("Create Connection");
         this.mainMenuCreateConnection.setSize(new Dimension(100, 100));
         this.mainMenuCreateConnection.setVisible(true);
         this.mainMenuCreateConnection.addActionListener(new ActionListener() {
             @Override
+
+            // On ActionListener event,
             public void actionPerformed(ActionEvent e) {
-                //userServerInputWindow.setVisible(true);
-                String serverinput = new JOptionPane().showInputDialog("Enter Server IP:");
-                if (!serverinput.equals("")) {
-                    serverIP = serverinput;
+
+                // Prompt user for an IP address and store input.
+                String serverInput = new JOptionPane().showInputDialog("Enter Server IP:");
+
+                // If the String is not empty,
+                if (!serverInput.equals("")) {
+                    // Set server IP.
+                    serverIP = serverInput;
                 }
+
+                // Prompt the user for a port number.  Try to parse an Integer from user input and store in portNum.
                 try {
                     portNum = Integer.parseInt(new JOptionPane().showInputDialog("Enter Port Number:"));
-                } catch (Exception ex) {
+                }
+                // If unable to store, set portNum to default and notify user in ChatDisplay.
+                catch (Exception ex) {
                     portNum = 8989;
+                    chatDisplay.append("***\nSYSTEM: Invalid port number.\n" +
+                            "Connecting to default port.\n***\n\n");
                 }
 
                 updateConnectionInfo();
@@ -99,19 +119,16 @@ public class ChatWindow {
             }
         });
 
+        // Initialize JMenuItem(mainMenuExit). This menu item closes the application.
         this.mainMenuExit = new JMenuItem("Exit");
         this.mainMenuExit.setSize(new Dimension(100, 100));
         this.mainMenuExit.setVisible(true);
         this.mainMenuExit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ev) {
-                try {
-                    connectChat.closeConnection();
-                } catch (Exception ex) {
-                    //don't care about this Exception
-                }
-                mainWindow.dispose();
-                Runtime.getRuntime().exit(0);
+                connectChat.closeConnection();
+                mainWindow.dispose(); // Frees up resources used by window.
+                Runtime.getRuntime().exit(0); // Exit runtime normally
             }
         });
 
@@ -144,19 +161,17 @@ public class ChatWindow {
         this.chatUserScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         this.chatUserScroll.setVisible(true);
 
-        // Unused.
+        // Initialize JPanel(userInputPanel) and Set Parameters
         this.userInputPanel = new JPanel();
         this.userInputPanel.setBackground(Color.BLACK);
         this.userInputPanel.setVisible(true);
         this.userInputPanel.setLayout(new BorderLayout());
 
-        // Initialize JButton(submitChat) w/ActionListener that calls addText on button click.
+        // Initialize JButton(submitChat) w/ActionListener that appends userInputPanel text to ChatDisplay.
         this.submitChat = new JButton("Submit");
         this.submitChat.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
-                //updateChat();
                 addText();
             }
         });
@@ -166,23 +181,19 @@ public class ChatWindow {
         this.chatInput.setWrapStyleWord(true);
         this.chatInput.setLineWrap(true);
         this.chatInput.addKeyListener(new KeyListener() {
-
-            @Override
-            public void keyTyped(KeyEvent e) {
-            }
-
+            // If Ctrl+Enter is pressed call addText().
             @Override
             public void keyPressed(KeyEvent e) {
                 if ((e.getKeyCode() == KeyEvent.VK_ENTER) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
                     addText();
                 }
             }
-
+            // Unused events.
             @Override
-            public void keyReleased(KeyEvent e) {
-            }
+            public void keyTyped(KeyEvent e) {}
+            @Override
+            public void keyReleased(KeyEvent e) {}
         });
-
         // Add mouse listener. On mouse click, remove text.
         this.chatInput.addMouseListener(new MouseAdapter() {
 
@@ -198,22 +209,27 @@ public class ChatWindow {
         this.chatInputScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         this.chatInputScroll.setVisible(true);
 
-        //Add components to the mainWindow
-        this.mainWindow.add(this.mainBackground);
-        this.mainBackground.add(this.mainMenuBar, BorderLayout.NORTH);
-        this.mainBackground.add(this.chatScroll);
-        this.mainBackground.add(this.chatUserScroll, BorderLayout.WEST);
-        this.mainBackground.add(this.userInputPanel, BorderLayout.SOUTH);
-        this.mainMenuBar.add(this.mainMenu);
-        this.mainMenu.add(this.mainMenuCreateConnection);
-        this.mainMenu.add(this.mainMenuExit);
-        this.userInputPanel.add(this.submitChat, BorderLayout.WEST);
-        this.userInputPanel.add(this.chatInputScroll, BorderLayout.CENTER);
+        //Add all JComponents
+            // Main Window (JFrame)
+            this.mainWindow.add(this.mainBackground);
+            // Main Background (JPanel)
+            this.mainBackground.add(this.mainMenuBar, BorderLayout.NORTH);
+            this.mainBackground.add(this.chatScroll);
+            this.mainBackground.add(this.chatUserScroll, BorderLayout.WEST);
+            this.mainBackground.add(this.userInputPanel, BorderLayout.SOUTH);
+            // Main Menu Bar (JMenuBar)
+            this.mainMenuBar.add(this.mainMenu);
+            // Main Menu (JMenu)
+            this.mainMenu.add(this.mainMenuCreateConnection);
+            this.mainMenu.add(this.mainMenuExit);
+            // User Input Panel (JPanel)
+            this.userInputPanel.add(this.submitChat, BorderLayout.WEST);
+            this.userInputPanel.add(this.chatInputScroll, BorderLayout.CENTER);
+            // User Server Input Window (JFrame)
+            this.userServerInputWindow.add(this.userServerInputPane);
 
-
-        //pack the mainWindow to size and update the screen.
-        this.mainWindow.pack();
-        updateConnectionInfo();
+        this.mainWindow.pack();// Pack the mainWindow to size and update the screen.
+        updateConnectionInfo();// Initialize/display default connection.
         updateScreen();
 
     }
@@ -272,6 +288,7 @@ public class ChatWindow {
     //Method for starting the chat connection in a new thread.
     private void startChatConnection() {
         try {
+            connectChat.closeConnection();
             connectChat = new ChatConnection(serverIP, portNum, this);
             Thread startup = new Thread(connectChat);
             startup.start();
