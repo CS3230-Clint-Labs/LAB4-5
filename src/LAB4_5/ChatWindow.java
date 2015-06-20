@@ -14,23 +14,23 @@ public class ChatWindow {
     private JFrame mainWindow;  // The main container frame for 'ChatWindow' object.
     private JFrame userServerInputWindow; // The container frame for 'userServerInputPane'. Collect connection info.
     private JPanel mainBackground;  // JPanel that is associated with 'mainWindow'.
-    private JOptionPane userServerInputPane; // Called when 'createConnection' option is used. Prompts for connect info.
-    private JMenuBar menuBar; // Menu bar for mainWindow.
-    private JMenu menu; // Menu for 'mainWindow'.
-    private JMenuItem createConnection; // Menu option on main mainWindow that allows user to create a new Connection.
-    private JMenuItem exit; // Menu option that allows user to exit Java application.
-    private JPanel userinputPanel; // JPanel that contains
-    private JTextArea chatInput;
-    private JTextArea chatDisplay;
-    private JTextArea chatUserDisplay;
-    private JScrollPane chatScroll;
-    private JScrollPane chatUserScroll;
-    private JScrollPane chatInputScroll;
-    private JButton submitChat;
-    private boolean clearTextField = true;
-    private String serverip;
-    private int portnum;
-    private ChatConnection connectChat;
+    private JOptionPane userServerInputPane; // Called when 'mainMenuCreateConnection' option is used. Prompts for connect info.
+    private JMenuBar mainMenuBar; // Menu bar for mainWindow.
+    private JMenu mainMenu; // Menu for 'mainWindow'.
+    private JMenuItem mainMenuCreateConnection; // Menu option on 'mainWindow'. Allows user to create a new Connection.
+    private JMenuItem mainMenuExit; // Menu option that allows user to exit this application.
+    private JPanel userInputPanel; // JPanel that contains submit button 'submitChat' and user input chat box area.
+    private JTextArea chatInput; // Text area that allows user to enter a chat message.
+    private JTextArea chatDisplay; // Displays incoming and outgoing chat messages. Uneditable.
+    private JTextArea connectionInfoDisplay; // Displays connection ip and port number.  Is updated with changes.
+    private JScrollPane chatScroll; // Scroll pane for 'chatInput'.
+    private JScrollPane chatUserScroll; // Scroll pane for 'chatUserScroll'.
+    private JScrollPane chatInputScroll; // Scroll pane for 'chatInputScroll'.
+    private JButton submitChat; // Button that appends 'chatInput' text to 'chatDisplay'.  Send your message.
+    private boolean shouldClearTextField = true; // Used for clearing 'chatInput' default message 'Enter Input Here'.
+    private String serverIP; // String for storing IP address.  IP for server connection.
+    private int portNum; // String for storing port number.  Port used for incoming/outgoing streams. Server/client.
+    private ChatConnection connectChat; // A new chat connection for exchanging messages.
 
     public ChatWindow() {
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -39,8 +39,8 @@ public class ChatWindow {
             }
         });
         // Default IP/Port
-        this.serverip = "localhost";
-        this.portnum = 8989;
+        this.serverIP = "localhost";
+        this.portNum = 8989;
 
         // Initialize JFrame(mainWindow) and Set Parameters
         this.mainWindow = new JFrame();
@@ -68,30 +68,30 @@ public class ChatWindow {
         this.userServerInputPane.setVisible(true);
         this.userServerInputWindow.add(this.userServerInputPane);
 
-        // Initialize JMenuBar(menuBar) and Set Parameters
-        this.menuBar = new JMenuBar();
+        // Initialize JMenuBar(mainMenuBar) and Set Parameters
+        this.mainMenuBar = new JMenuBar();
 
-        // Initialize JMenu (menu) and Set Parameters
-        this.menu = new JMenu("Menu");
-        this.menu.setSize(new Dimension(100, 80));
-        this.menu.setVisible(true);
+        // Initialize JMenu (mainMenu) and Set Parameters
+        this.mainMenu = new JMenu("Menu");
+        this.mainMenu.setSize(new Dimension(100, 80));
+        this.mainMenu.setVisible(true);
 
-        // Initialize JMenuItems (for menu) and Set Parameters
-        this.createConnection = new JMenuItem("Create Connection");
-        this.createConnection.setSize(new Dimension(100, 100));
-        this.createConnection.setVisible(true);
-        this.createConnection.addActionListener(new ActionListener() {
+        // Initialize JMenuItems (for mainMenu) and Set Parameters
+        this.mainMenuCreateConnection = new JMenuItem("Create Connection");
+        this.mainMenuCreateConnection.setSize(new Dimension(100, 100));
+        this.mainMenuCreateConnection.setVisible(true);
+        this.mainMenuCreateConnection.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //userServerInputWindow.setVisible(true);
                 String serverinput = new JOptionPane().showInputDialog("Enter Server IP:");
                 if (!serverinput.equals("")) {
-                    serverip = serverinput;
+                    serverIP = serverinput;
                 }
                 try {
-                    portnum = Integer.parseInt(new JOptionPane().showInputDialog("Enter Port Number:"));
+                    portNum = Integer.parseInt(new JOptionPane().showInputDialog("Enter Port Number:"));
                 } catch (Exception ex) {
-                    portnum = 8989;
+                    portNum = 8989;
                 }
 
                 updateConnectionInfo();
@@ -99,10 +99,10 @@ public class ChatWindow {
             }
         });
 
-        this.exit = new JMenuItem("Exit");
-        this.exit.setSize(new Dimension(100, 100));
-        this.exit.setVisible(true);
-        this.exit.addActionListener(new ActionListener() {
+        this.mainMenuExit = new JMenuItem("Exit");
+        this.mainMenuExit.setSize(new Dimension(100, 100));
+        this.mainMenuExit.setVisible(true);
+        this.mainMenuExit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ev) {
                 try {
@@ -131,24 +131,24 @@ public class ChatWindow {
         this.chatScroll.setVisible(true);
         this.chatScroll.setAutoscrolls(true);
 
-        // Initialize JTextArea(chatUserDisplay) and Set Parameters
-        this.chatUserDisplay = new JTextArea("Connection Information:\n\n");
-        this.chatUserDisplay.setEditable(false);
-        this.chatUserDisplay.setWrapStyleWord(true);
-        this.chatUserDisplay.setLineWrap(true);
-        this.chatUserDisplay.setVisible(true);
+        // Initialize JTextArea(connectionInfoDisplay) and Set Parameters
+        this.connectionInfoDisplay = new JTextArea("Connection Information:\n\n");
+        this.connectionInfoDisplay.setEditable(false);
+        this.connectionInfoDisplay.setWrapStyleWord(true);
+        this.connectionInfoDisplay.setLineWrap(true);
+        this.connectionInfoDisplay.setVisible(true);
 
-        // Initialize JScrollPane(chatUserScroll corresponds to chatUserDisplay) and Set Parameters
-        this.chatUserScroll = new JScrollPane(this.chatUserDisplay);
+        // Initialize JScrollPane(chatUserScroll corresponds to connectionInfoDisplay) and Set Parameters
+        this.chatUserScroll = new JScrollPane(this.connectionInfoDisplay);
         this.chatUserScroll.setPreferredSize(new Dimension(200, 650));
         this.chatUserScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         this.chatUserScroll.setVisible(true);
 
         // Unused.
-        this.userinputPanel = new JPanel();
-        this.userinputPanel.setBackground(Color.BLACK);
-        this.userinputPanel.setVisible(true);
-        this.userinputPanel.setLayout(new BorderLayout());
+        this.userInputPanel = new JPanel();
+        this.userInputPanel.setBackground(Color.BLACK);
+        this.userInputPanel.setVisible(true);
+        this.userInputPanel.setLayout(new BorderLayout());
 
         // Initialize JButton(submitChat) w/ActionListener that calls addText on button click.
         this.submitChat = new JButton("Submit");
@@ -200,15 +200,15 @@ public class ChatWindow {
 
         //Add components to the mainWindow
         this.mainWindow.add(this.mainBackground);
-        this.mainBackground.add(this.menuBar, BorderLayout.NORTH);
+        this.mainBackground.add(this.mainMenuBar, BorderLayout.NORTH);
         this.mainBackground.add(this.chatScroll);
         this.mainBackground.add(this.chatUserScroll, BorderLayout.WEST);
-        this.mainBackground.add(this.userinputPanel, BorderLayout.SOUTH);
-        this.menuBar.add(this.menu);
-        this.menu.add(this.createConnection);
-        this.menu.add(this.exit);
-        this.userinputPanel.add(this.submitChat, BorderLayout.WEST);
-        this.userinputPanel.add(this.chatInputScroll, BorderLayout.CENTER);
+        this.mainBackground.add(this.userInputPanel, BorderLayout.SOUTH);
+        this.mainMenuBar.add(this.mainMenu);
+        this.mainMenu.add(this.mainMenuCreateConnection);
+        this.mainMenu.add(this.mainMenuExit);
+        this.userInputPanel.add(this.submitChat, BorderLayout.WEST);
+        this.userInputPanel.add(this.chatInputScroll, BorderLayout.CENTER);
 
 
         //pack the mainWindow to size and update the screen.
@@ -220,19 +220,19 @@ public class ChatWindow {
 
     // Clears text from chat input (for initial text) and prevents this action from being taken again.
     private void clearTextField() {
-        if (this.clearTextField) {
-            this.clearTextField = false;
+        if (this.shouldClearTextField) {
+            this.shouldClearTextField = false;
             this.chatInput.setText("");
         }
     }
 
     // Update chat and scroll panes to 'look and feel' version. Set caret to end of string in chat display.
     private void updateScreen() {
-        this.menuBar.updateUI();
-        this.menu.updateUI();
+        this.mainMenuBar.updateUI();
+        this.mainMenu.updateUI();
         this.userServerInputPane.updateUI();
         this.chatDisplay.updateUI();
-        this.chatUserDisplay.updateUI();
+        this.connectionInfoDisplay.updateUI();
         this.chatUserScroll.updateUI();
         this.chatScroll.updateUI();
         this.mainBackground.updateUI();
@@ -246,7 +246,7 @@ public class ChatWindow {
                 connectChat.sendMessage(this.chatInput.getText());
             } catch (Exception e) {
                 this.chatDisplay.append("***\nSYSTEM: Currently no active chat Connections.\n" +
-                        "Please use the menu and select Start Connection\n***\n\n");
+                        "Please use the mainMenu and select Start Connection\n***\n\n");
             }
             this.chatDisplay.append("me: " + this.chatInput.getText() + "\n\n");
             this.chatInput.setText("");
@@ -257,22 +257,22 @@ public class ChatWindow {
 
     // Display Input from Server.
     public void addServerText(String servertext) {
-        this.chatDisplay.append(serverip + ": " + servertext + "\n\n");
+        this.chatDisplay.append(serverIP + ": " + servertext + "\n\n");
         updateScreen();
     }
 
     //Updates Server information on the side of the mainWindow.
     private void updateConnectionInfo() {
-        this.chatUserDisplay.setText("Connection Information:\n\n" +
-                "Server: " + serverip + "\n"
-                + "Port#: " + portnum + "\n");
+        this.connectionInfoDisplay.setText("Connection Information:\n\n" +
+                "Server: " + serverIP + "\n"
+                + "Port#: " + portNum + "\n");
         updateScreen();
     }
 
     //Method for starting the chat connection in a new thread.
     private void startChatConnection() {
         try {
-            connectChat = new ChatConnection(serverip, portnum, this);
+            connectChat = new ChatConnection(serverIP, portNum, this);
             Thread startup = new Thread(connectChat);
             startup.start();
             //this is where i tried to connect to the server IP. still can't get it to work.
@@ -282,7 +282,7 @@ public class ChatWindow {
         }
     }
 
-//will need to add another menu item for closing the connection to close all the sockets so we can close the connection.
+//will need to add another mainMenu item for closing the connection to close all the sockets so we can close the connection.
 //need to add some checks to the connection portion and see if the port is already active. if so, close it so we can establish a new connection.
 //if i get a wild hare going, i may set up the client to establish multiple connections on different ports, allow simultaneous chats in the same mainWindow
 
