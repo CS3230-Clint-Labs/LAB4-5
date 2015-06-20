@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.*;
 
 /**
+ * All
  * Authored by Clinton on 6/12/2015.
  * Edited by Tyler Cazier
  *
@@ -22,6 +23,14 @@ public class ChatConnection implements Runnable
     protected DataOutputStream sendUserMessage;
 
 
+    /**
+     * Allows the construction of a new 'ChatConnection' object.  This object can be treated as a Ser
+     *
+     * @param serverip - Used as the 'server' connection IP address.
+     * @param portnum - Used as the sock for Server/Client to communicate on.
+     * @param win - A new ChatWindow object used for exchanging messages.
+     * @throws IOException
+     */
     public ChatConnection(String serverip, int portnum, ChatWindow win) throws IOException
     {
         this.window = win;
@@ -79,7 +88,6 @@ public class ChatConnection implements Runnable
 
         try
         {
-//            OutgoingConnection = new Socket(this.server, this.port);
             OutgoingConnection = new Socket(this.server,this.port);
             this.input = new DataInputStream(OutgoingConnection.getInputStream());
             this.sendUserMessage = new DataOutputStream(OutgoingConnection.getOutputStream());
@@ -116,12 +124,10 @@ public class ChatConnection implements Runnable
         {
             this.OutgoingConnection = new Socket();
             OutgoingConnection.connect(new InetSocketAddress(this.server, this.port), 10000);
-
         }catch (Exception e)
         {
             System.out.println(e.getStackTrace());
         }
-
     }
     */
 

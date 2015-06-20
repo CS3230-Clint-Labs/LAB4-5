@@ -10,8 +10,7 @@ import java.io.IOException;
  * @author Tyler Cazier
  * @version 6/14/15
  */
-public class ChatWindow
-{
+public class ChatWindow {
     protected JFrame window;
     protected JFrame serverInfoWindow;
     protected JPanel background;
@@ -33,11 +32,12 @@ public class ChatWindow
     private int portnum;
     private ChatConnection connectChat;
 
-    public ChatWindow()
-    {
-        Runtime.getRuntime().addShutdownHook(new Thread(){public void run(){
-                    connectChat.closeConnection();
-                }});
+    public ChatWindow() {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                connectChat.closeConnection();
+            }
+        });
         // Default IP/Port
         this.serverip = "localhost";
         this.portnum = 8989;
@@ -85,15 +85,12 @@ public class ChatWindow
             public void actionPerformed(ActionEvent e) {
                 //serverInfoWindow.setVisible(true);
                 String serverinput = new JOptionPane().showInputDialog("Enter Server IP:");
-                if (!serverinput.equals(""))
-                {
+                if (!serverinput.equals("")) {
                     serverip = serverinput;
                 }
-                try
-                {
+                try {
                     portnum = Integer.parseInt(new JOptionPane().showInputDialog("Enter Port Number:"));
-                }catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     portnum = 8989;
                 }
 
@@ -103,16 +100,14 @@ public class ChatWindow
         });
 
         this.exit = new JMenuItem("Exit");
-        this.exit.setSize(new Dimension(100,100));
+        this.exit.setSize(new Dimension(100, 100));
         this.exit.setVisible(true);
         this.exit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ev) {
-                try
-                {
+                try {
                     connectChat.closeConnection();
-                }catch (Exception ex)
-                {
+                } catch (Exception ex) {
                     //don't care about this Exception
                 }
                 window.dispose();
@@ -145,7 +140,7 @@ public class ChatWindow
 
         // Initialize JScrollPane(chatUserScroll corresponds to chatUserDisplay) and Set Parameters
         this.chatUserScroll = new JScrollPane(this.chatUserDisplay);
-        this.chatUserScroll.setPreferredSize(new Dimension(200,650));
+        this.chatUserScroll.setPreferredSize(new Dimension(200, 650));
         this.chatUserScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         this.chatUserScroll.setVisible(true);
 
@@ -157,11 +152,10 @@ public class ChatWindow
 
         // Initialize JButton(submitChat) w/ActionListener that calls addText on button click.
         this.submitChat = new JButton("Submit");
-        this.submitChat.addActionListener(new ActionListener(){
+        this.submitChat.addActionListener(new ActionListener() {
 
             @Override
-            public void actionPerformed(ActionEvent e)
-            {
+            public void actionPerformed(ActionEvent e) {
                 //updateChat();
                 addText();
             }
@@ -171,7 +165,7 @@ public class ChatWindow
         this.chatInput = new JTextArea("Enter Input Here");
         this.chatInput.setWrapStyleWord(true);
         this.chatInput.setLineWrap(true);
-        this.chatInput.addKeyListener(new KeyListener(){
+        this.chatInput.addKeyListener(new KeyListener() {
 
             @Override
             public void keyTyped(KeyEvent e) {
@@ -179,8 +173,7 @@ public class ChatWindow
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if((e.getKeyCode() == KeyEvent.VK_ENTER) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0))
-                {
+                if ((e.getKeyCode() == KeyEvent.VK_ENTER) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
                     addText();
                 }
             }
@@ -191,12 +184,13 @@ public class ChatWindow
         });
 
         // Add mouse listener. On mouse click, remove text.
-        this.chatInput.addMouseListener(new MouseAdapter(){
+        this.chatInput.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mouseClicked(MouseEvent e) {
                 clearTextField();
-            }});
+            }
+        });
 
         // Initialize JScrollPane(chatInputScroll corresponds to chatInput) and set Parameters.
         this.chatInputScroll = new JScrollPane(this.chatInput);
@@ -225,18 +219,15 @@ public class ChatWindow
     }
 
     // Clears text from chat input (for initial text) and prevents this action from being taken again.
-    private void clearTextField()
-    {
-        if(this.clearTextField)
-        {
+    private void clearTextField() {
+        if (this.clearTextField) {
             this.clearTextField = false;
             this.chatInput.setText("");
         }
     }
 
     // Update chat and scroll panes to 'look and feel' version. Set caret to end of string in chat display.
-    private void updateScreen()
-    {
+    private void updateScreen() {
         this.menuBar.updateUI();
         this.menu.updateUI();
         this.inputPane.updateUI();
@@ -249,17 +240,13 @@ public class ChatWindow
     }
 
     // Append text with 'me: ' + chat input value and clear chat input
-    private void addText()
-    {
-        if(!this.chatInput.getText().equals("") && !this.chatInput.getText().equals(null))
-        {
-            try
-            {
+    private void addText() {
+        if (!this.chatInput.getText().equals("") && !this.chatInput.getText().equals(null)) {
+            try {
                 connectChat.sendMessage(this.chatInput.getText());
-            }catch(Exception e)
-            {
+            } catch (Exception e) {
                 this.chatDisplay.append("***\nSYSTEM: Currently no active chat Connections.\n" +
-                                        "Please use the menu and select Start Connection\n***\n\n");
+                        "Please use the menu and select Start Connection\n***\n\n");
             }
             this.chatDisplay.append("me: " + this.chatInput.getText() + "\n\n");
             this.chatInput.setText("");
@@ -269,15 +256,13 @@ public class ChatWindow
     }
 
     // Display Input from Server.
-    public void addServerText(String servertext)
-    {
+    public void addServerText(String servertext) {
         this.chatDisplay.append(serverip + ": " + servertext + "\n\n");
         updateScreen();
     }
 
     //Updates Server information on the side of the window.
-    private void updateConnectionInfo()
-    {
+    private void updateConnectionInfo() {
         this.chatUserDisplay.setText("Connection Information:\n\n" +
                 "Server: " + serverip + "\n"
                 + "Port#: " + portnum + "\n");
@@ -285,8 +270,7 @@ public class ChatWindow
     }
 
     //Method for starting the chat connection in a new thread.
-    private void startChatConnection()
-    {
+    private void startChatConnection() {
         try {
             connectChat = new ChatConnection(serverip, portnum, this);
             Thread startup = new Thread(connectChat);
@@ -298,7 +282,8 @@ public class ChatWindow
         }
     }
 
-    //will need to add another menu item for closing the connection to close all the sockets so we can close the connection.
-    //need to add some checks to the connection portion and see if the port is already active. if so, close it so we can establish a new connection.
-    //if i get a wild hare going, i may set up the client to establish multiple connections on different ports, allow simultaneous chats in the same window
+//will need to add another menu item for closing the connection to close all the sockets so we can close the connection.
+//need to add some checks to the connection portion and see if the port is already active. if so, close it so we can establish a new connection.
+//if i get a wild hare going, i may set up the client to establish multiple connections on different ports, allow simultaneous chats in the same window
+
 }
