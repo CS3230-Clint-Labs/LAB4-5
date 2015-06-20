@@ -11,22 +11,22 @@ import java.io.IOException;
  * @version 6/14/15
  */
 public class ChatWindow {
-    protected JFrame window;
-    protected JFrame serverInfoWindow;
-    protected JPanel background;
-    protected JOptionPane inputPane;
-    protected JMenuBar menuBar;
-    protected JMenu menu;
-    protected JMenuItem createConnection;
-    protected JMenuItem exit;
-    protected JPanel userinputPanel;
-    protected JTextArea chatInput;
-    protected JTextArea chatDisplay;
-    protected JTextArea chatUserDisplay;
-    protected JScrollPane chatScroll;
-    protected JScrollPane chatUserScroll;
-    protected JScrollPane chatInputScroll;
-    protected JButton submitChat;
+    private JFrame mainWindow;  // The main container frame for 'ChatWindow' object.
+    private JFrame userServerInputWindow; // The container frame for 'userServerInputPane'. Collect connection info.
+    private JPanel mainBackground;  // JPanel that is associated with 'mainWindow'.
+    private JOptionPane userServerInputPane; // Called when 'createConnection' option is used. Prompts for connect info.
+    private JMenuBar menuBar; // Menu bar for mainWindow.
+    private JMenu menu; // Menu for 'mainWindow'.
+    private JMenuItem createConnection; // Menu option on main mainWindow that allows user to create a new Connection.
+    private JMenuItem exit; // Menu option that allows user to exit Java application.
+    private JPanel userinputPanel; // JPanel that contains
+    private JTextArea chatInput;
+    private JTextArea chatDisplay;
+    private JTextArea chatUserDisplay;
+    private JScrollPane chatScroll;
+    private JScrollPane chatUserScroll;
+    private JScrollPane chatInputScroll;
+    private JButton submitChat;
     private boolean clearTextField = true;
     private String serverip;
     private int portnum;
@@ -42,31 +42,31 @@ public class ChatWindow {
         this.serverip = "localhost";
         this.portnum = 8989;
 
-        // Initialize JFrame(window) and Set Parameters
-        this.window = new JFrame();
-        this.window.setTitle("CS3230 Chat Client");
-        this.window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        this.window.setSize(new Dimension(800, 840));
-        this.window.setVisible(true);
+        // Initialize JFrame(mainWindow) and Set Parameters
+        this.mainWindow = new JFrame();
+        this.mainWindow.setTitle("CS3230 Chat Client");
+        this.mainWindow.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        this.mainWindow.setSize(new Dimension(800, 840));
+        this.mainWindow.setVisible(true);
 
-        // Initialize JFrame(serverInfoWindow) and Set Parameters
-        this.serverInfoWindow = new JFrame();
-        this.serverInfoWindow.setPreferredSize(new Dimension(100, 200));
-        this.serverInfoWindow.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        this.serverInfoWindow.setVisible(false);
+        // Initialize JFrame(userServerInputWindow) and Set Parameters
+        this.userServerInputWindow = new JFrame();
+        this.userServerInputWindow.setPreferredSize(new Dimension(100, 200));
+        this.userServerInputWindow.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        this.userServerInputWindow.setVisible(false);
 
-        // Initialize JPanel(background) and Set Parameters
-        this.background = new JPanel();
-        this.background.setBackground(Color.red);
-        this.background.setLayout(new BorderLayout());
-        this.background.setPreferredSize(new Dimension(790, 640));
-        this.background.setVisible(true);
+        // Initialize JPanel(mainBackground) and Set Parameters
+        this.mainBackground = new JPanel();
+        this.mainBackground.setBackground(Color.red);
+        this.mainBackground.setLayout(new BorderLayout());
+        this.mainBackground.setPreferredSize(new Dimension(790, 640));
+        this.mainBackground.setVisible(true);
 
-        // Initialize JOptionPane (inputPane) and Set Parameters
-        this.inputPane = new JOptionPane();
-        this.inputPane.setPreferredSize(new Dimension(100, 200));
-        this.inputPane.setVisible(true);
-        this.serverInfoWindow.add(this.inputPane);
+        // Initialize JOptionPane (userServerInputPane) and Set Parameters
+        this.userServerInputPane = new JOptionPane();
+        this.userServerInputPane.setPreferredSize(new Dimension(100, 200));
+        this.userServerInputPane.setVisible(true);
+        this.userServerInputWindow.add(this.userServerInputPane);
 
         // Initialize JMenuBar(menuBar) and Set Parameters
         this.menuBar = new JMenuBar();
@@ -83,7 +83,7 @@ public class ChatWindow {
         this.createConnection.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //serverInfoWindow.setVisible(true);
+                //userServerInputWindow.setVisible(true);
                 String serverinput = new JOptionPane().showInputDialog("Enter Server IP:");
                 if (!serverinput.equals("")) {
                     serverip = serverinput;
@@ -110,7 +110,7 @@ public class ChatWindow {
                 } catch (Exception ex) {
                     //don't care about this Exception
                 }
-                window.dispose();
+                mainWindow.dispose();
                 Runtime.getRuntime().exit(0);
             }
         });
@@ -198,12 +198,12 @@ public class ChatWindow {
         this.chatInputScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         this.chatInputScroll.setVisible(true);
 
-        //Add components to the window
-        this.window.add(this.background);
-        this.background.add(this.menuBar, BorderLayout.NORTH);
-        this.background.add(this.chatScroll);
-        this.background.add(this.chatUserScroll, BorderLayout.WEST);
-        this.background.add(this.userinputPanel, BorderLayout.SOUTH);
+        //Add components to the mainWindow
+        this.mainWindow.add(this.mainBackground);
+        this.mainBackground.add(this.menuBar, BorderLayout.NORTH);
+        this.mainBackground.add(this.chatScroll);
+        this.mainBackground.add(this.chatUserScroll, BorderLayout.WEST);
+        this.mainBackground.add(this.userinputPanel, BorderLayout.SOUTH);
         this.menuBar.add(this.menu);
         this.menu.add(this.createConnection);
         this.menu.add(this.exit);
@@ -211,8 +211,8 @@ public class ChatWindow {
         this.userinputPanel.add(this.chatInputScroll, BorderLayout.CENTER);
 
 
-        //pack the window to size and update the screen.
-        this.window.pack();
+        //pack the mainWindow to size and update the screen.
+        this.mainWindow.pack();
         updateConnectionInfo();
         updateScreen();
 
@@ -230,12 +230,12 @@ public class ChatWindow {
     private void updateScreen() {
         this.menuBar.updateUI();
         this.menu.updateUI();
-        this.inputPane.updateUI();
+        this.userServerInputPane.updateUI();
         this.chatDisplay.updateUI();
         this.chatUserDisplay.updateUI();
         this.chatUserScroll.updateUI();
         this.chatScroll.updateUI();
-        this.background.updateUI();
+        this.mainBackground.updateUI();
         this.chatDisplay.setCaretPosition(this.chatDisplay.getText().length());
     }
 
@@ -261,7 +261,7 @@ public class ChatWindow {
         updateScreen();
     }
 
-    //Updates Server information on the side of the window.
+    //Updates Server information on the side of the mainWindow.
     private void updateConnectionInfo() {
         this.chatUserDisplay.setText("Connection Information:\n\n" +
                 "Server: " + serverip + "\n"
@@ -284,6 +284,6 @@ public class ChatWindow {
 
 //will need to add another menu item for closing the connection to close all the sockets so we can close the connection.
 //need to add some checks to the connection portion and see if the port is already active. if so, close it so we can establish a new connection.
-//if i get a wild hare going, i may set up the client to establish multiple connections on different ports, allow simultaneous chats in the same window
+//if i get a wild hare going, i may set up the client to establish multiple connections on different ports, allow simultaneous chats in the same mainWindow
 
 }

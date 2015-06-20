@@ -44,12 +44,12 @@ public class ChatConnection implements Runnable
 //    {
 //        try
 //        {
-////            this.serverSocket = new ServerSocket(this.port);
+//            this.serverSocket = new ServerSocket(this.port);
 //            serverSocket = new ServerSocket(8080);
 //
 //            //continuously listen for a incoming connection
-////            while(!this.serverSocket.isClosed())
-////            {
+//              while(!this.serverSocket.isClosed())
+//               {
 //                this.incomingConnection = serverSocket.accept();
 //
 //                this.input = new DataInputStream(incomingConnection.getInputStream());
@@ -88,8 +88,8 @@ public class ChatConnection implements Runnable
 
         try
         {
-            OutgoingConnection = new Socket(this.server,this.port);
-            this.input = new DataInputStream(OutgoingConnection.getInputStream());
+            OutgoingConnection = new Socket(this.server,this.port); // Create a new connection on a server.
+            this.input = new DataInputStream(OutgoingConnection.getInputStream()); // Receiving input from server.
             this.sendUserMessage = new DataOutputStream(OutgoingConnection.getOutputStream());
             while(OutgoingConnection.isConnected() && !OutgoingConnection.isClosed())
             {
