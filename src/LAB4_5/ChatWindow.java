@@ -132,8 +132,6 @@ public class ChatWindow {
             }
         });
 
-//
-
         // Initialize JTextArea(chatDisplay) and Set Parameters
         this.chatDisplay = new JTextArea();
         this.chatDisplay.setEditable(false);
@@ -234,7 +232,10 @@ public class ChatWindow {
 
     }
 
-    // Clears text from chat input (for initial text) and prevents this action from being taken again.
+    /**
+     * Clears the beginning text, 'Enter Input Here', on mouse click from the chat input box and prevents any future
+     * text from being cleared from that field.
+     */
     private void clearTextField() {
         if (this.shouldClearTextField) {
             this.shouldClearTextField = false;
@@ -242,7 +243,9 @@ public class ChatWindow {
         }
     }
 
-    // Update chat and scroll panes to 'look and feel' version. Set caret to end of string in chat display.
+    /**
+     *  Update chat and scroll panes to 'look and feel' version. Set caret to end of string in chat display.
+     */
     private void updateScreen() {
         this.mainMenuBar.updateUI();
         this.mainMenu.updateUI();
@@ -271,13 +274,19 @@ public class ChatWindow {
 
     }
 
-    // Display Input from Server.
-    public void addServerText(String servertext) {
-        this.chatDisplay.append(serverIP + ": " + servertext + "\n\n");
+    /**
+     * Display server message to chat display
+     *
+     * @param serverText - the message to be displayed.
+     */
+    public void addServerText(String serverText) {
+        this.chatDisplay.append(serverIP + ": " + serverText + "\n\n");
         updateScreen();
     }
 
-    //Updates Server information on the side of the mainWindow.
+    /**
+     * Updates connection information on the connection information display.
+     */
     private void updateConnectionInfo() {
         this.connectionInfoDisplay.setText("Connection Information:\n\n" +
                 "Server: " + serverIP + "\n"
@@ -285,22 +294,17 @@ public class ChatWindow {
         updateScreen();
     }
 
-    //Method for starting the chat connection in a new thread.
+    /**
+     * Closes any open server/client connections and begins a new server connection;
+     */
     private void startChatConnection() {
         try {
             connectChat.closeConnection();
             connectChat = new ChatConnection(serverIP, portNum, this);
             Thread startup = new Thread(connectChat);
             startup.start();
-            //this is where i tried to connect to the server IP. still can't get it to work.
-            //connectChat.runConnection();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-//will need to add another mainMenu item for closing the connection to close all the sockets so we can close the connection.
-//need to add some checks to the connection portion and see if the port is already active. if so, close it so we can establish a new connection.
-//if i get a wild hare going, i may set up the client to establish multiple connections on different ports, allow simultaneous chats in the same mainWindow
-
 }
