@@ -34,6 +34,7 @@ public class ChatWindow {
     private String serverIP; // String for storing IP address.  IP for server connection.
     private int portNum; // String for storing port number.  Port used for incoming/outgoing streams. Server/client.
     private ChatConnection connectChat; // A new chat connection for exchanging messages.
+    private boolean isConnected = false; // Tracks whether there is currently a server connection or not.
 
     /**
      * Constructor: Constructs a ChatWindow object. This is the only defined constructor.
@@ -235,6 +236,28 @@ public class ChatWindow {
 
     }
 
+    // Accessor Methods
+
+    /**
+     * Returns this ChatWindow object's chatDisplay.
+     *
+     * @return JTextArea chatDisplay
+     */
+    public JTextArea getChatDisplay() {
+        return chatDisplay;
+    }
+
+    // Mutator Methods
+
+    /**
+     * Returns a boolean that allows the value of isConnected to be set.
+     *
+     * @param isConnected boolean
+     */
+    public void getIsConnected(boolean isConnected) {
+        this.isConnected = isConnected;
+    }
+
     /**
      * Clears the beginning text, 'Enter Input Here', on mouse click from the chat input box and prevents any future
      * text from being cleared from that field.
@@ -273,6 +296,7 @@ public class ChatWindow {
             this.chatDisplay.append("me: " + this.chatInput.getText() + "\n\n");
             this.chatInput.setText("");
             updateScreen();
+            startChatConnection();
         }
 
     }
@@ -301,13 +325,17 @@ public class ChatWindow {
      * Closes any open server/client connections and begins a new connection;
      */
     private void startChatConnection() {
+        // Close current connection if currently opened.
+        if (isConnected == true)
+            this.connectChat.closeConnection();
+
         // Try to establish a new ChatConnection using 'this' serverIP and portNum and start a new thread on this
         // connection object.
         try {
-            connectChat.closeConnection(); // The ChatConnection.closeConnection method has its own exception handling.
             connectChat = new ChatConnection(serverIP, portNum, this);
             Thread startup = new Thread(connectChat);
             startup.start();
+            isConnected = true;
         } catch (IOException e) {
             e.printStackTrace();
         }
