@@ -44,49 +44,41 @@ public class ChatConnection implements Runnable
     public void run()
     {
         // Try to establish a connection to 'this' object's port.
-        try
-        {
+        try {
             this.serverSocket = new ServerSocket(this.portNum);
 
             // While the server connection is open,
-            while(!this.serverSocket.isClosed())
-            {
+            while (!this.serverSocket.isClosed()) {
                 // accept any incoming connections and create input/output streams for that connection.
                 this.incomingConnection = serverSocket.accept();
                 this.incomingData = new DataInputStream(incomingConnection.getInputStream());
                 this.outgoingData = new DataOutputStream(incomingConnection.getOutputStream());
 
                 // While the incoming connection is connected and open,
-                while(incomingConnection.isConnected() && !incomingConnection.isClosed())
-                {
+                while (incomingConnection.isConnected() && !incomingConnection.isClosed()) {
                     // Try to receive in coming text from the stream and store it in a String.
                     try {
                         String incomingMessage = incomingData.readUTF();
                         // If String equals 'exit', close incoming connection and return to listening.
-                        if (incomingMessage.equals("exit"))
-                        {
+                        if (incomingMessage.equals("exit")) {
                             incomingConnection.close();
                             break;
                         }
                         // If the string is not 'exit' or null, write the message to 'this' ChatWindow's chat display.
                         if (!incomingMessage.equals(null))
-                        {
                             window.addServerText(incomingMessage);
-                        }
                     }
                     // If there is an error incoming connection, close it.
-                    catch (IOException e)
-                    {
+                    catch (IOException e) {
                         incomingConnection.close();
                     }
                 }
             }
         }
         // If socket bind fails, notify the user and connect to the default port.
-        catch (IOException e)
-        {
-            window.getChatDisplay().append("***\nSYSTEM: Unable to use this port. \n" +
-                "Default port number will be used. Please enter a valid port number.\n***\n\n");
+        catch (IOException e) {
+            window.getChatDisplay().append("***\nSYSTEM: Unable to establish a connection on this port. \n" +
+                    "Please enter a valid port number.\n***\n\n");
         }
     }
 
@@ -176,7 +168,8 @@ public class ChatConnection implements Runnable
     {
         try
         {
-            this.incomingData.close();
+            if(incomingData != null)
+                this.incomingData.close();
         }catch(IOException e)
         {
             // If unable to close data stream, it may already be closed, interrupted, or it may have never been opened.
@@ -184,7 +177,8 @@ public class ChatConnection implements Runnable
         }
         try
         {
-            this.outgoingData.close();
+            if(outgoingData != null)
+                this.outgoingData.close();
         }catch(IOException e)
         {
             // If unable to close data stream, it may already be closed, interrupted, or it may have never been opened.
@@ -192,8 +186,10 @@ public class ChatConnection implements Runnable
         }
         try
         {
-            this.outgoingConnection.close();
-            this.window.getIsConnected(false);
+            if(outgoingConnection != null) {
+                this.outgoingConnection.close();
+                this.window.getIsConnected(false);
+            }
         }catch(IOException e)
         {
             // If unable to close socket, it may already be closed, interrupted, or it may have never been opened.
@@ -201,7 +197,8 @@ public class ChatConnection implements Runnable
         }
         try
         {
-            this.incomingConnection.shutdownInput();
+            if(incomingConnection != null)
+                this.incomingConnection.shutdownInput();
         }catch(IOException e)
         {
             // If unable to shutdown connection to input stream, it may already be closed, interrupted, or it may have
@@ -209,7 +206,8 @@ public class ChatConnection implements Runnable
         }
         try
         {
-            this.incomingConnection.shutdownOutput();
+            if(incomingConnection != null)
+                this.incomingConnection.shutdownOutput();
         }catch(IOException e)
         {
             // If unable to shutdown connection to output stream, it may already be closed, interrupted, or it may have
@@ -217,7 +215,8 @@ public class ChatConnection implements Runnable
         }
         try
         {
-            this.incomingConnection.close();
+            if(incomingConnection != null)
+                this.incomingConnection.close();
         }catch(IOException e)
         {
             // If unable to close socket, it may already be closed, interrupted, or it may have never been opened.
@@ -225,9 +224,10 @@ public class ChatConnection implements Runnable
         }
         try
         {
-            this.serverSocket.close();
-            this.window.getIsConnected(false);
-
+            if(serverSocket != null) {
+                this.serverSocket.close();
+                this.window.getIsConnected(false);
+            }
         }catch(IOException e)
         {
             // If unable to close server socket, it may already be closed, interrupted, or it may have never been

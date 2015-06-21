@@ -233,7 +233,7 @@ public class ChatWindow {
         this.mainWindow.pack();// Pack the mainWindow to size and update the screen.
         updateConnectionInfo();// Initialize/display default connection.
         updateScreen();
-
+        startChatConnection();
     }
 
     // Accessor Methods
