@@ -1,41 +1,40 @@
 package LAB4_5;
 
-import com.sun.corba.se.spi.activation.Server;
-
 import java.io.*;
 import java.net.*;
 
 /**
- * All
- * Authored by Clinton on 6/12/2015.
- * Edited by Tyler Cazier
  *
+ *
+ * @author Clinton Fowler
+ * @author Tyler Cazier
+ * @version 6/20/15
  */
 public class ChatConnection implements Runnable
 {
-    protected ChatWindow window;
-    protected int port;
-    protected String server;
-    protected ServerSocket serverSocket;
-    protected DataInputStream input;
-    protected Socket incomingConnection;
-    protected Socket OutgoingConnection;
-    protected DataOutputStream sendUserMessage;
+    private String serverIP;
+    private int portNum;
+    private ChatWindow window;
+    private ServerSocket serverSocket;
+    private Socket incomingConnection;
+    private Socket outgoingConnection;
+    private DataInputStream incomingData;
+    private DataOutputStream outgoingData;
 
 
     /**
      * Allows the construction of a new 'ChatConnection' object.  This object can be treated as a Ser
      *
-     * @param serverip - Used as the 'server' connection IP address.
-     * @param portnum - Used as the sock for Server/Client to communicate on.
-     * @param win - A new ChatWindow object used for exchanging messages.
+     * @param serverIP - Used as the 'serverIP' connection IP address.
+     * @param portNum - Used as the pipe for server/client communication.
+     * @param window - A new ChatWindow object used for exchanging messages.
      * @throws IOException
      */
-    public ChatConnection(String serverip, int portnum, ChatWindow win) throws IOException
+    public ChatConnection(String serverIP, int portNum, ChatWindow window) throws IOException
     {
-        this.window = win;
-        this.port = portnum;
-        this.server = serverip;
+        this.serverIP = serverIP; // IP address of the server that listens for the connection.
+        this.portNum = portNum; // Port number socket connections.
+        this.window = window; // The chat window message exchange.
     }
 
 
@@ -44,7 +43,7 @@ public class ChatConnection implements Runnable
 //    {
 //        try
 //        {
-//            this.serverSocket = new ServerSocket(this.port);
+//            this.serverSocket = new ServerSocket(this.portNum);
 //            serverSocket = new ServerSocket(8080);
 //
 //            //continuously listen for a incoming connection
@@ -52,12 +51,12 @@ public class ChatConnection implements Runnable
 //               {
 //                this.incomingConnection = serverSocket.accept();
 //
-//                this.input = new DataInputStream(incomingConnection.getInputStream());
-//            this.sendUserMessage = new DataOutputStream(incomingConnection.getOutputStream());
+//                this.incomingData = new DataInputStream(incomingConnection.getInputStream());
+//            this.outgoingData = new DataOutputStream(incomingConnection.getOutputStream());
 //                while(incomingConnection.isConnected() && !incomingConnection.isClosed())
 //                {
 //                    try {
-//                        String incomingMessage = input.readUTF();
+//                        String incomingMessage = incomingData.readUTF();
 //                        if (incomingMessage.equals("exit"))
 //                        {
 //                            incomingConnection.close();
@@ -88,17 +87,17 @@ public class ChatConnection implements Runnable
 
         try
         {
-            OutgoingConnection = new Socket(this.server,this.port); // Create a new connection on a server.
-            this.input = new DataInputStream(OutgoingConnection.getInputStream()); // Receiving input from server.
-            this.sendUserMessage = new DataOutputStream(OutgoingConnection.getOutputStream());
-            while(OutgoingConnection.isConnected() && !OutgoingConnection.isClosed())
+            outgoingConnection = new Socket(this.serverIP,this.portNum); // Create a new connection on a serverIP.
+            this.incomingData = new DataInputStream(outgoingConnection.getInputStream()); // Receiving incomingData from serverIP.
+            this.outgoingData = new DataOutputStream(outgoingConnection.getOutputStream());
+            while(outgoingConnection.isConnected() && !outgoingConnection.isClosed())
             {
                 try
                 {
-                    String incomingMessage = input.readUTF();
+                    String incomingMessage = incomingData.readUTF();
                     if (incomingMessage.equals("exit"))
                     {
-                        OutgoingConnection.close();
+                        outgoingConnection.close();
                         break;
                     }
                     if (!incomingMessage.equals(null))
@@ -107,7 +106,7 @@ public class ChatConnection implements Runnable
                     }
                 }catch (NullPointerException e)
                 {
-                    OutgoingConnection.close();
+                    outgoingConnection.close();
                 }
             }
         }
@@ -122,8 +121,8 @@ public class ChatConnection implements Runnable
     {
         try
         {
-            this.OutgoingConnection = new Socket();
-            OutgoingConnection.connect(new InetSocketAddress(this.server, this.port), 10000);
+            this.outgoingConnection = new Socket();
+            outgoingConnection.connect(new InetSocketAddress(this.serverIP, this.portNum), 10000);
         }catch (Exception e)
         {
             System.out.println(e.getStackTrace());
@@ -135,8 +134,8 @@ public class ChatConnection implements Runnable
     {
         try
         {
-            this.sendUserMessage.writeUTF(message);
-            this.sendUserMessage.flush();
+            this.outgoingData.writeUTF(message);
+            this.outgoingData.flush();
         }catch(IOException e)
         {
             throw e;
@@ -148,21 +147,21 @@ public class ChatConnection implements Runnable
     {
         try
         {
-            this.input.close();
+            this.incomingData.close();
         }catch(Exception e)
         {
             //doesn't matter
         }
         try
         {
-            this.sendUserMessage.close();
+            this.outgoingData.close();
         }catch(Exception e)
         {
             //don't care about this exception
         }
         try
         {
-            this.OutgoingConnection.close();
+            this.outgoingConnection.close();
         }catch(Exception e)
         {
             //don't care about this exception

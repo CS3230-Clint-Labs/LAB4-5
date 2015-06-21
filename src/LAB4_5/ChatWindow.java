@@ -6,9 +6,12 @@ import java.awt.event.*;
 import java.io.IOException;
 
 /**
+ * This class defines a ChatWindow object.  The ChatWindow object is a GUI application used to exchange messages on a
+ * defined IP address and port number. it works in conjunction with the ChatConnection object.
+ *
  * @author Clinton Fowler
  * @author Tyler Cazier
- * @version 6/14/15
+ * @version 6/20/15
  */
 public class ChatWindow {
     private JFrame mainWindow;  // The main container frame for 'ChatWindow' object.
@@ -295,11 +298,13 @@ public class ChatWindow {
     }
 
     /**
-     * Closes any open server/client connections and begins a new server connection;
+     * Closes any open server/client connections and begins a new connection;
      */
     private void startChatConnection() {
+        // Try to establish a new ChatConnection using 'this' serverIP and portNum and start a new thread on this
+        // connection object.
         try {
-            connectChat.closeConnection();
+            connectChat.closeConnection(); // The ChatConnection.closeConnection method has its own exception handling.
             connectChat = new ChatConnection(serverIP, portNum, this);
             Thread startup = new Thread(connectChat);
             startup.start();
