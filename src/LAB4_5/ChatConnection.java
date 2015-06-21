@@ -68,17 +68,15 @@ public class ChatConnection implements Runnable
                         if (!incomingMessage.equals(null))
                             window.addServerText(incomingMessage);
                     }
-                    // If there is an error incoming connection, close it.
-                    catch (IOException e) {
+                    // If there is an null pointer exception, close it.
+                    catch (NullPointerException e) {
                         incomingConnection.close();
                     }
                 }
             }
         }
-        // If socket bind fails, notify the user and connect to the default port.
         catch (IOException e) {
-            window.getChatDisplay().append("***\nSYSTEM: Unable to establish a connection on this port. \n" +
-                    "Please enter a valid port number.\n***\n\n");
+            // Will deal with later.
         }
     }
 
@@ -110,7 +108,7 @@ public class ChatConnection implements Runnable
 //                    }
 //                }
 //                // If there is an error in receiving data connection, close the output stream.
-//                catch (IOException e)
+//                catch (NullPointerException e)
 //                {
 //                    incomingConnection.close();
 //                }
@@ -119,8 +117,7 @@ public class ChatConnection implements Runnable
 //        // If socket bind fails or IP connection fails, notify the user and connect to the default port and IP address.
 //        catch (IOException e)
 //        {
-//            window.getChatDisplay().append("***\nSYSTEM: Unable to use this port. \n" +
-//                "Default port and IP numbers will be used. Please enter a valid port number and IP address.\n***\n\n");
+//            // Will deal with later.
 //        }
 //    }
 
