@@ -18,7 +18,8 @@ public class ChatWindow
     protected JOptionPane inputPane;
     protected JMenuBar menuBar;
     protected JMenu menu;
-    protected JMenuItem createConnection;
+    protected JMenuItem createServerConnection;
+    protected JMenuItem createClientConnection;
     protected JMenuItem exit;
     protected JPanel userinputPanel;
     protected JTextArea chatInput;
@@ -30,17 +31,30 @@ public class ChatWindow
     protected JButton submitChat;
     private boolean clearTextField = true;
     private String serverip;
-    private int portnum;
+    private int serverportnum;
+    private int clientPortnum;
     private ChatConnection connectChat;
+    private ClientConnection connectClient;
 
     public ChatWindow()
     {
         Runtime.getRuntime().addShutdownHook(new Thread(){public void run(){
-                    connectChat.closeConnection();
+                    try{
+                        connectChat.closeConnection();
+                    }catch (NullPointerException e){
+                        //can't do anything.
+                    }
+                    try{
+                        connectClient.closeConnection();
+                    }catch (NullPointerException e)
+                    {
+                        //can't do anything
+                    }
                 }});
         // Default IP/Port
         this.serverip = "localhost";
-        this.portnum = 8989;
+        this.serverportnum = 8989;
+        this.clientPortnum = 8989;
 
         // Initialize JFrame(window) and Set Parameters
         this.window = new JFrame();
@@ -77,28 +91,41 @@ public class ChatWindow
         this.menu.setVisible(true);
 
         // Initialize JMenuItems (for menu) and Set Parameters
-        this.createConnection = new JMenuItem("Create Connection");
-        this.createConnection.setSize(new Dimension(100, 100));
-        this.createConnection.setVisible(true);
-        this.createConnection.addActionListener(new ActionListener() {
+        this.createServerConnection = new JMenuItem("Start Server Connection");
+        this.createServerConnection.setSize(new Dimension(100, 100));
+        this.createServerConnection.setVisible(true);
+        this.createServerConnection.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //serverInfoWindow.setVisible(true);
-                String serverinput = new JOptionPane().showInputDialog("Enter Server IP:");
-                if (!serverinput.equals(""))
-                {
-                    serverip = serverinput;
-                }
-                try
-                {
-                    portnum = Integer.parseInt(new JOptionPane().showInputDialog("Enter Port Number:"));
-                }catch (Exception ex)
-                {
-                    portnum = 8989;
+
+                try {
+                    serverportnum = Integer.parseInt(new JOptionPane().showInputDialog("Enter Port Number:"));
+                } catch (Exception ex) {
+                    serverportnum = 8989;
                 }
 
                 updateConnectionInfo();
-                startChatConnection();
+                startServerConnection();
+            }
+        });
+
+        this.createClientConnection = new JMenuItem("Start Client Connection");
+        this.createClientConnection.setSize(new Dimension(100,100));
+        this.createClientConnection.setVisible(true);
+        this.createClientConnection.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String serverinput = new JOptionPane().showInputDialog("Enter Server IP:");
+                if (!serverinput.equals("")) {
+                    serverip = serverinput;
+                }
+                try {
+                    clientPortnum = Integer.parseInt(new JOptionPane().showInputDialog("Enter Port Number:"));
+                } catch (Exception ex) {
+                    clientPortnum = 8989;
+                }
+                updateConnectionInfo();
+                startClientConnection();
             }
         });
 
@@ -211,7 +238,8 @@ public class ChatWindow
         this.background.add(this.chatUserScroll, BorderLayout.WEST);
         this.background.add(this.userinputPanel, BorderLayout.SOUTH);
         this.menuBar.add(this.menu);
-        this.menu.add(this.createConnection);
+        this.menu.add(this.createServerConnection);
+        this.menu.add(this.createClientConnection);
         this.menu.add(this.exit);
         this.userinputPanel.add(this.submitChat, BorderLayout.WEST);
         this.userinputPanel.add(this.chatInputScroll, BorderLayout.CENTER);
@@ -255,7 +283,13 @@ public class ChatWindow
         {
             try
             {
-                connectChat.sendMessage(this.chatInput.getText());
+                if(connectChat != null) {
+                    connectChat.sendMessage(this.chatInput.getText());
+                }
+                else
+                {
+                    connectClient.sendMessage(this.chatInput.getText());
+                }
             }catch(Exception e)
             {
                 this.chatDisplay.append("***\nSYSTEM: Currently no active chat Connections.\n" +
@@ -278,23 +312,42 @@ public class ChatWindow
     //Updates Server information on the side of the window.
     private void updateConnectionInfo()
     {
-        this.chatUserDisplay.setText("Connection Information:\n\n" +
+        this.chatUserDisplay.setText("Connection Information:\n\n");
+        if(connectChat == null)
+        {
+            this.chatUserDisplay.append("Server Listening: "+ this.serverportnum + "\n\n");
+        }
+        else
+        {
+            this.chatUserDisplay.append("Server Not listening\n\n");
+        }
+        this.chatUserDisplay.append("Client Connection Information:\n\n" +
                 "Server: " + serverip + "\n"
-                + "Port#: " + portnum + "\n");
+                + "Port#: " + clientPortnum + "\n");
         updateScreen();
     }
 
     //Method for starting the chat connection in a new thread.
-    private void startChatConnection()
+    private void startServerConnection()
     {
         try {
-            connectChat = new ChatConnection(serverip, portnum, this);
+            connectChat = new ChatConnection(serverportnum, this);
             Thread startup = new Thread(connectChat);
             startup.start();
-            //this is where i tried to connect to the server IP. still can't get it to work.
-            //connectChat.runConnection();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void startClientConnection()
+    {
+        try{
+            connectClient = new ClientConnection(serverip, clientPortnum, this);
+            Thread clientStart = new Thread(connectClient);
+            clientStart.start();
+        }catch (Exception e)
+        {
+            chatDisplay.append("\n******\nUnable to connect to server\n********\n");
         }
     }
 
