@@ -15,37 +15,17 @@ import java.io.IOException;
  */
 public class ChatWindow
 {
-    protected JFrame window;
-    protected JFrame serverInfoWindow;
-    protected JPanel background;
-    protected JOptionPane inputPane;
-    protected JMenuBar menuBar;
-    protected JMenu menu;
-    protected JMenuItem createServerConnection;
-    protected JMenuItem createClientConnection;
-    protected JMenuItem exit;
-    protected JPanel userinputPanel;
-    protected JTextArea chatInput;
-    protected JTextArea chatDisplay;
-    protected JTextArea chatUserDisplay;
-    protected JScrollPane chatScroll;
-    protected JScrollPane chatUserScroll;
-    protected JScrollPane chatInputScroll;
-    protected JButton submitChat;
-    private boolean clearTextField = true;
-    private String serverip;
-    private int serverportnum;
-    private int clientPortnum;
-    private ChatConnection connectChat;
-    private ClientConnection connectClient;
-public class ChatWindow {
+    private int serverPortNum; // Integer for storing port number.  Port used for incoming/outgoing streams. Server.
+    private int clientPortNum; // Integer for storing port number.  Port used for incoming/outgoing streams. client.
+
     private JFrame mainWindow;  // The main container frame for 'ChatWindow' object.
     private JFrame userServerInputWindow; // The container frame for 'userServerInputPane'. Collect connection info.
     private JPanel mainBackground;  // JPanel that is associated with 'mainWindow'.
     private JOptionPane userServerInputPane; // Called when 'mainMenuCreateConnection' option is used. Prompts for connect info.
     private JMenuBar mainMenuBar; // Menu bar for mainWindow.
     private JMenu mainMenu; // Menu for 'mainWindow'.
-    private JMenuItem mainMenuCreateConnection; // Menu option on 'mainWindow'. Allows user to create a new Connection.
+    private JMenuItem createServerConnection; // Menu option on 'mainWindow'. Allows user to create a new Server Connection.
+    private JMenuItem createClientConnection; // Menu option on 'mainWindow'. Allows user to create a new Client Connection.
     private JMenuItem mainMenuExit; // Menu option that allows user to exit this application.
     private JPanel userInputPanel; // JPanel that contains submit button 'submitChat' and user input chat box area.
     private JTextArea chatInput; // Text area that allows user to enter a chat message.
@@ -57,27 +37,20 @@ public class ChatWindow {
     private JButton submitChat; // Button that appends 'chatInput' text to 'chatDisplay'.  Send your message.
     private boolean shouldClearTextField = true; // Used for clearing 'chatInput' default message 'Enter Input Here'.
     private String serverIP; // String for storing IP address.  IP for server connection.
-    private int portNum; // String for storing port number.  Port used for incoming/outgoing streams. Server/client.
-    private ChatConnection connectChat; // A new chat connection for exchanging messages.
-    private boolean isConnected = false; // Tracks whether there is currently a server connection or not.
+    private ChatConnection connectChat; // A new Server side chat connection for exchanging messages.
+    private ClientConnection connectClient; // A new Client side chat connection for exchanging messages.
+    private boolean serverIsConnected = false; // Tracks whether there is currently a server connection or not.
+    private boolean clientIsConnected = false; // Tracks whether there is currently a client connection or not.
 
     /**
      * Constructor: Constructs a ChatWindow object. This is the only defined constructor.
      */
-    public ChatWindow() {
-
-        // Initializes a shutdown hook (thread) on this ChatWindow's runtime.  On application close, regardless of
-        // normal exit or application interrupt, a thread will start and execute on the below code.
-        // Thread closes all incoming and outgoing streams, connections, and sockets.
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                connectChat.closeConnection();
-            }
-        });
-
 
     public ChatWindow()
     {
+        // Initializes a shutdown hook (thread) on this ChatWindow's runtime.  On application close, regardless of
+        // normal exit or application interrupt, a thread will start and execute on the below code.
+        // Thread closes all incoming and outgoing streams, connections, and sockets.
         Runtime.getRuntime().addShutdownHook(new Thread(){public void run(){
                     try{
                         connectChat.closeConnection();
@@ -93,10 +66,8 @@ public class ChatWindow {
                 }});
         // Default IP/Port
         this.serverIP = "localhost";
-        this.portNum = 8989;
-        this.serverip = "localhost";
-        this.serverportnum = 8989;
-        this.clientPortnum = 8989;
+        this.serverPortNum = 8989;
+        this.clientPortNum = 8989;
 
         // Initialize JFrame(mainWindow) and Set Parameters
         this.mainWindow = new JFrame();
@@ -131,11 +102,6 @@ public class ChatWindow {
         this.mainMenu.setSize(new Dimension(100, 80));
         this.mainMenu.setVisible(true);
 
-        // Initialize JMenuItem(mainMenuCreateConnection). This menu item allows the user to establish a new IP/port.
-        this.mainMenuCreateConnection = new JMenuItem("Create Connection");
-        this.mainMenuCreateConnection.setSize(new Dimension(100, 100));
-        this.mainMenuCreateConnection.setVisible(true);
-        this.mainMenuCreateConnection.addActionListener(new ActionListener() {
         // Initialize JMenuItems (for menu) and Set Parameters
         this.createServerConnection = new JMenuItem("Start Server Connection");
         this.createServerConnection.setSize(new Dimension(100, 100));
@@ -145,19 +111,10 @@ public class ChatWindow {
 
             // On ActionListener event,
             public void actionPerformed(ActionEvent e) {
-
-                // Prompt user for an IP address and store input.
-                String serverInput = new JOptionPane().showInputDialog("Enter Server IP:");
-
-                // If the String is not empty,
-                if (!serverInput.equals("")) {
-                    // Set server IP.
-                    serverIP = serverInput;
-
                 try {
-                    serverportnum = Integer.parseInt(new JOptionPane().showInputDialog("Enter Port Number:"));
+                    serverPortNum = Integer.parseInt(new JOptionPane().showInputDialog("Start Server on Port Number:"));
                 } catch (Exception ex) {
-                    serverportnum = 8989;
+                    serverPortNum = 8989;
                 }
 
                 updateConnectionInfo();
@@ -173,20 +130,16 @@ public class ChatWindow {
             public void actionPerformed(ActionEvent e) {
                 String serverinput = new JOptionPane().showInputDialog("Enter Server IP:");
                 if (!serverinput.equals("")) {
-                    serverip = serverinput;
+                    serverIP = serverinput;
                 }
 
                 // Prompt the user for a port number.  Try to parse an Integer from user input and store in portNum.
                 try {
-                    portNum = Integer.parseInt(new JOptionPane().showInputDialog("Enter Port Number:"));
-                try {
-                    clientPortnum = Integer.parseInt(new JOptionPane().showInputDialog("Enter Port Number:"));
-                } catch (Exception ex) {
-                    clientPortnum = 8989;
+                    clientPortNum = Integer.parseInt(new JOptionPane().showInputDialog("Enter Port Number:"));
                 }
                 // If unable to store, set portNum to default and notify user in ChatDisplay.
                 catch (Exception ex) {
-                    portNum = 8989;
+                    clientPortNum = 8989;
                     chatDisplay.append("***\nSYSTEM: Invalid port number.\n" +
                             "Connecting to default port.\n***\n\n");
                 }
@@ -203,7 +156,6 @@ public class ChatWindow {
         this.mainMenuExit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ev) {
-                connectChat.closeConnection();
                 mainWindow.dispose(); // Frees up resources used by window.
                 Runtime.getRuntime().exit(0); // Exit runtime normally
             }
@@ -295,30 +247,20 @@ public class ChatWindow {
             // Main Menu Bar (JMenuBar)
             this.mainMenuBar.add(this.mainMenu);
             // Main Menu (JMenu)
-            this.mainMenu.add(this.mainMenuCreateConnection);
+//            this.mainMenu.add(this.mainMenuCreateConnection);
+            this.mainMenu.add(this.createServerConnection);
+            this.mainMenu.add(this.createClientConnection);
             this.mainMenu.add(this.mainMenuExit);
             // User Input Panel (JPanel)
             this.userInputPanel.add(this.submitChat, BorderLayout.WEST);
             this.userInputPanel.add(this.chatInputScroll, BorderLayout.CENTER);
             // User Server Input Window (JFrame)
             this.userServerInputWindow.add(this.userServerInputPane);
-        //Add components to the window
-        this.window.add(this.background);
-        this.background.add(this.menuBar, BorderLayout.NORTH);
-        this.background.add(this.chatScroll);
-        this.background.add(this.chatUserScroll, BorderLayout.WEST);
-        this.background.add(this.userinputPanel, BorderLayout.SOUTH);
-        this.menuBar.add(this.menu);
-        this.menu.add(this.createServerConnection);
-        this.menu.add(this.createClientConnection);
-        this.menu.add(this.exit);
-        this.userinputPanel.add(this.submitChat, BorderLayout.WEST);
-        this.userinputPanel.add(this.chatInputScroll, BorderLayout.CENTER);
 
         this.mainWindow.pack();// Pack the mainWindow to size and update the screen.
         updateConnectionInfo();// Initialize/display default connection.
         updateScreen();
-        startChatConnection();
+//        startChatConnection();
     }
 
     // Accessor Methods
@@ -335,20 +277,31 @@ public class ChatWindow {
     // Mutator Methods
 
     /**
-     * Returns a boolean that allows the value of isConnected to be set.
+     * Returns a boolean that allows the value of serverIsConnected to be set.
      *
      * @param isConnected boolean
      */
-    public void getIsConnected(boolean isConnected) {
-        this.isConnected = isConnected;
+    public void isServerConnected(boolean isConnected) {
+        this.serverIsConnected = isConnected;
+    }
+
+    /**
+     * Returns a boolean that allows the value of serverIsConnected to be set.
+     *
+     * @param isConnected boolean
+     */
+    public void isClientConnected(boolean isConnected) {
+        this.serverIsConnected = isConnected;
     }
 
     /**
      * Clears the beginning text, 'Enter Input Here', on mouse click from the chat input box and prevents any future
      * text from being cleared from that field.
      */
-    private void clearTextField() {
-        if (this.shouldClearTextField) {
+    private void clearTextField()
+    {
+        if (this.shouldClearTextField)
+        {
             this.shouldClearTextField = false;
             this.chatInput.setText("");
         }
@@ -370,15 +323,11 @@ public class ChatWindow {
     }
 
     // Append text with 'me: ' + chat input value and clear chat input
-    private void addText() {
-        if (!this.chatInput.getText().equals("") && !this.chatInput.getText().equals(null)) {
-            try {
-                connectChat.sendMessage(this.chatInput.getText());
-            } catch (Exception e) {
     private void addText()
     {
         if(!this.chatInput.getText().equals("") && !this.chatInput.getText().equals(null))
         {
+            //try to send chat through either server or client connection
             try
             {
                 if(connectChat != null) {
@@ -396,7 +345,6 @@ public class ChatWindow {
             this.chatDisplay.append("me: " + this.chatInput.getText() + "\n\n");
             this.chatInput.setText("");
             updateScreen();
-            startChatConnection();
         }
 
     }
@@ -414,58 +362,60 @@ public class ChatWindow {
     /**
      * Updates connection information on the connection information display.
      */
-    private void updateConnectionInfo() {
-        this.connectionInfoDisplay.setText("Connection Information:\n\n" +
-                "Server: " + serverIP + "\n"
-                + "Port#: " + portNum + "\n");
+
     //Updates Server information on the side of the window.
     private void updateConnectionInfo()
     {
-        this.chatUserDisplay.setText("Connection Information:\n\n");
-        if(connectChat == null)
+        this.connectionInfoDisplay.setText("Connection Information:\n\n");
+        if(connectChat != null)
         {
-            this.chatUserDisplay.append("Server Listening: "+ this.serverportnum + "\n\n");
+            this.connectionInfoDisplay.append("Server Listening: "+ this.serverPortNum + "\n\n");
         }
         else
         {
-            this.chatUserDisplay.append("Server Not listening\n\n");
+            this.connectionInfoDisplay.append("Server Not listening\n\n");
         }
-        this.chatUserDisplay.append("Client Connection Information:\n\n" +
-                "Server: " + serverip + "\n"
-                + "Port#: " + clientPortnum + "\n");
+        if(connectClient != null) {
+            this.connectionInfoDisplay.append("Client Connection Information:\n\n" +
+                    "Server: " + serverIP + "\n"
+                    + "Port#: " + clientPortNum + "\n");
+        }
         updateScreen();
     }
 
     /**
      * Closes any open server/client connections and begins a new connection;
      */
-    private void startChatConnection() {
-        // Close current connection if currently opened.
-        if (isConnected == true)
-            this.connectChat.closeConnection();
 
-        // Try to establish a new ChatConnection using 'this' serverIP and portNum and start a new thread on this
-        // connection object.
-    //Method for starting the chat connection in a new thread.
     private void startServerConnection()
     {
+        // Close current connection if currently opened.
+        if (serverIsConnected == true)
+        {
+            this.connectChat.closeConnection();
+        }
+        // Try to establish a new ServerChatConnection using 'this' serverPortNum and start a new thread on this
         try {
-            connectChat = new ChatConnection(serverIP, portNum, this);
-            connectChat = new ChatConnection(serverportnum, this);
+            connectChat = new ChatConnection(serverPortNum, this);
             Thread startup = new Thread(connectChat);
             startup.start();
-            isConnected = true;
+            serverIsConnected = true;
+            updateConnectionInfo();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+        //Method for starting the Client chat connection in a new thread.
     private void startClientConnection()
     {
+        // Try to establish a new ClientChatConnection using 'this' serverIP and ClientPortNum and start a new thread on this
         try{
-            connectClient = new ClientConnection(serverip, clientPortnum, this);
+            connectClient = new ClientConnection(serverIP, clientPortNum, this);
             Thread clientStart = new Thread(connectClient);
             clientStart.start();
+            clientIsConnected = true;
+            updateConnectionInfo();
         }catch (Exception e)
         {
             chatDisplay.append("\n******\nUnable to connect to server\n********\n");

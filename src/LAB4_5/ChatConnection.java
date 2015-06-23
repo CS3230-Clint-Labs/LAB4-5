@@ -14,39 +14,25 @@ import java.net.*;
  */
 public class ChatConnection implements Runnable
 {
-    private String serverIP; // IP address of the chat server.
     private int portNum; // Port number for data exchange.
     private ChatWindow window; // GUI window object for message exchange.
     private ServerSocket serverSocket; // Used to listen for incoming connection requests to port.  Connects.
     private Socket incomingConnection; // Used for clients that try to connect to this server.
-    private Socket outgoingConnection; // Used to send data on established port connection.
     private DataInputStream incomingData; // Data stream for receiving data.
     private DataOutputStream outgoingData; // Data stream for sending data.
-    protected ChatWindow window;
-    protected int port;
-    protected ServerSocket serverSocket;
-    protected DataInputStream input;
-    protected Socket incomingConnection;
-    protected Socket OutgoingConnection;
-    protected DataOutputStream sendUserMessage;
 
 
     /**
      * Allows the construction of a new 'ChatConnection' object.  This object can be treated as a Ser
      *
-     * @param serverIP - Used as the 'serverIP' connection IP address.
      * @param portNum - Used as the pipe for server/client communication.
      * @param window - A new ChatWindow object used for exchanging messages.
      * @throws IOException
      */
-    public ChatConnection(String serverIP, int portNum, ChatWindow window) throws IOException
-    public ChatConnection(int portnum, ChatWindow win) throws IOException
+    public ChatConnection(int portNum, ChatWindow win) throws IOException
     {
-        this.serverIP = serverIP; // IP address of the server that listens for the connection.
         this.portNum = portNum; // Port number socket connections.
-        this.window = window; // The chat window message exchange.
-        this.window = win;
-        this.port = portnum;
+        this.window = win; // The chat window message exchange.
     }
 
     // Use if this pc is the server for the chat connection.
@@ -54,123 +40,39 @@ public class ChatConnection implements Runnable
     public void run()
     {
         // Try to establish a connection to 'this' object's port.
-        try {
-            this.serverSocket = new ServerSocket(this.portNum);
-
-            // While the server connection is open,
-            while (!this.serverSocket.isClosed()) {
-                // accept any incoming connections and create input/output streams for that connection.
-                this.incomingConnection = serverSocket.accept();
-                this.incomingData = new DataInputStream(incomingConnection.getInputStream());
-                this.outgoingData = new DataOutputStream(incomingConnection.getOutputStream());
-
-                // While the incoming connection is connected and open,
-                while (incomingConnection.isConnected() && !incomingConnection.isClosed()) {
-                    // Try to receive in coming text from the stream and store it in a String.
-                    try {
-                        String incomingMessage = incomingData.readUTF();
-                        // If String equals 'exit', close incoming connection and return to listening.
-                        if (incomingMessage.equals("exit")) {
-                            incomingConnection.close();
-                            break;
-                        }
-                        // If the string is not 'exit' or null, write the message to 'this' ChatWindow's chat display.
-                        if (!incomingMessage.equals(null))
-                            window.addServerText(incomingMessage);
-                    }
-                    // If there is an null pointer exception, close it.
-                    catch (NullPointerException e) {
-                        incomingConnection.close();
-                    }
-                }
-            }
-        }
-        catch (IOException e) {
-            // Will deal with later.
-        }
-    }
-
-    // Use if this pc is only a client.
-
-//    @Override
-//    public void run()
-//    {
-//
-//        try
-//        {
-//            outgoingConnection = new Socket(this.serverIP,this.portNum); // Create a new connection on 'this' IP/port.
-//            this.incomingData = new DataInputStream(outgoingConnection.getInputStream()); // Open input stream.
-//            this.outgoingData = new DataOutputStream(outgoingConnection.getOutputStream()); // Open output stream.
-//
-//            // While the socket is connected and not closed,
-//            while(outgoingConnection.isConnected() && !outgoingConnection.isClosed())
-//            {
-//
-//                // Try to read a String from the input stream.
-//                try
-//                {
-//                    String incomingMessage = incomingData.readUTF();
-//                    // If String equals 'exit', close incoming connection and return to listening.
-//                    if (incomingMessage.equals("exit"))
-//                    {
-//                        outgoingConnection.close();
-//                        break;
-//                    }
-//                }
-//                // If there is an error in receiving data connection, close the output stream.
-//                catch (NullPointerException e)
-//                {
-//                    incomingConnection.close();
-//                }
-//            }
-//        }
-//        // If socket bind fails or IP connection fails, notify the user and connect to the default port and IP address.
-//        catch (IOException e)
-//        {
-//            // Will deal with later.
-//        }
-//    }
-
-    /**
-     * Unused
-     */
-    public void runConnection()
-    {
         try
         {
-            this.outgoingConnection = new Socket();
-            outgoingConnection.connect(new InetSocketAddress(this.serverIP, this.portNum), 10000);
-        }catch (Exception e)
-        {
-            System.out.println(e.getStackTrace());
-        }
-    }
-    @Override
-    public void run()
-    {
-        try
-        {
-            serverSocket = new ServerSocket(this.port);
+            serverSocket = new ServerSocket(this.portNum);
 
+            // accept any incoming connections and create input/output streams for that connection.
             this.incomingConnection = serverSocket.accept();
-            this.input = new DataInputStream(incomingConnection.getInputStream());
-            this.sendUserMessage = new DataOutputStream(incomingConnection.getOutputStream());
+            this.incomingData = new DataInputStream(incomingConnection.getInputStream());
+            this.outgoingData = new DataOutputStream(incomingConnection.getOutputStream());
+
+            // While the incoming connection is connected and open,
             while(incomingConnection.isConnected() && !incomingConnection.isClosed())
             {
+                // Try to receive in coming text from the stream and store it in a String.
                 try {
-                    String incomingMessage = input.readUTF();
+                    String incomingMessage = incomingData.readUTF();
+                    // If String equals 'exit', close incoming connection
                     if (incomingMessage.equals("exit"))
                     {
-                            incomingConnection.close();
-                            break;
+                        incomingData.close();
+                        outgoingData.close();
+                        incomingConnection.close();
+                        break;
                     }
+                    // If the string is not 'exit' or null, write the message to 'this' ChatWindow's chat display.
                     if (!incomingMessage.equals(null))
                     {
-                            window.addServerText(incomingMessage);
+                        window.addServerText(incomingMessage);
                     }
-                } catch (NullPointerException e)
+                } catch (NullPointerException e) // If there is an null pointer exception, close it.
                 {
-                        incomingConnection.close();
+                    incomingData.close();
+                    outgoingData.close();
+                    incomingConnection.close();
                 }
             }
         }catch (Exception e)
@@ -178,44 +80,6 @@ public class ChatConnection implements Runnable
             //don't care
         }
     }
-
-
-//    @Override
-//    public void run()
-//    {
-//
-//        try
-//        {
-////            OutgoingConnection = new Socket(this.server, this.port);
-//            OutgoingConnection = new Socket(this.server,this.port);
-//            this.input = new DataInputStream(OutgoingConnection.getInputStream());
-//            this.sendUserMessage = new DataOutputStream(OutgoingConnection.getOutputStream());
-//            while(OutgoingConnection.isConnected() && !OutgoingConnection.isClosed())
-//            {
-//                try
-//                {
-//                    String incomingMessage = input.readUTF();
-//                    if (incomingMessage.equals("exit"))
-//                    {
-//                        OutgoingConnection.close();
-//                        break;
-//                    }
-//                    if (!incomingMessage.equals(null))
-//                    {
-//                        window.addServerText(incomingMessage);
-//                    }
-//                }catch (NullPointerException e)
-//                {
-//                    OutgoingConnection.close();
-//                }
-//            }
-//        }
-//        catch (Exception e)
-//        {
-//            //don't care
-//        }
-//    }
-
 
     /**
      * Sends a String on an outgoing data stream to a connected client.
@@ -264,17 +128,6 @@ public class ChatConnection implements Runnable
         }
         try
         {
-            if(outgoingConnection != null) {
-                this.outgoingConnection.close();
-                this.window.getIsConnected(false);
-            }
-        }catch(IOException e)
-        {
-            // If unable to close socket, it may already be closed, interrupted, or it may have never been opened.
-            // Should not affect application or resources.
-        }
-        try
-        {
             if(incomingConnection != null)
                 this.incomingConnection.shutdownInput();
         }catch(IOException e)
@@ -304,7 +157,7 @@ public class ChatConnection implements Runnable
         {
             if(serverSocket != null) {
                 this.serverSocket.close();
-                this.window.getIsConnected(false);
+                this.window.isServerConnected(false);
             }
         }catch(IOException e)
         {
