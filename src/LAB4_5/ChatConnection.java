@@ -2,6 +2,10 @@ package LAB4_5;
 
 import java.io.*;
 import java.net.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  * This method opens a server socket on a specified port/IP address.  This server listens for incoming connection
@@ -14,6 +18,11 @@ import java.net.*;
  */
 public class ChatConnection implements Runnable
 {
+    // STATICS
+    private static final Logger LOG = Logger.getLogger(ChatWindow.class.getName());
+
+    // Fields
+    private FileHandler fh;
     private int portNum; // Port number for data exchange.
     private ChatWindow window; // GUI window object for message exchange.
     private ServerSocket serverSocket; // Used to listen for incoming connection requests to port.  Connects.
@@ -26,7 +35,7 @@ public class ChatConnection implements Runnable
      * Allows the construction of a new 'ChatConnection' object.  This object can be treated as a Ser
      *
      * @param portNum - Used as the pipe for server/client communication.
-     * @param window - A new ChatWindow object used for exchanging messages.
+     * @param win - A new ChatWindow object used for exchanging messages.
      * @throws IOException
      */
     public ChatConnection(int portNum, ChatWindow win) throws IOException
@@ -39,6 +48,7 @@ public class ChatConnection implements Runnable
     @Override
     public void run()
     {
+
         // Try to establish a connection to 'this' object's port.
         try
         {
@@ -73,11 +83,14 @@ public class ChatConnection implements Runnable
                     incomingData.close();
                     outgoingData.close();
                     incomingConnection.close();
+                    // Close connection due to null pointer.
+                    LOG.info("Null pointer exception. Unable to read input.");
                 }
             }
         }catch (Exception e)
         {
-            //don't care
+            // Server was unable to make socket connection on port. Nothing can be done.
+            LOG.fine("Socket connection error.");
         }
     }
 
@@ -98,6 +111,7 @@ public class ChatConnection implements Runnable
         // If failed, throw exception.
         catch(IOException e)
         {
+            LOG.severe("Unable to write on outgoing connection.");
             throw e;
         }
 
@@ -116,6 +130,7 @@ public class ChatConnection implements Runnable
         {
             // If unable to close data stream, it may already be closed, interrupted, or it may have never been opened.
             // Should not affect application or resources.
+            LOG.warning("Cannot close InputDataStream.");
         }
         try
         {
@@ -125,6 +140,7 @@ public class ChatConnection implements Runnable
         {
             // If unable to close data stream, it may already be closed, interrupted, or it may have never been opened.
             // Should not affect application or resources.
+            LOG.warning("Cannot close OutputDataStream.");
         }
         try
         {
@@ -134,6 +150,7 @@ public class ChatConnection implements Runnable
         {
             // If unable to shutdown connection to input stream, it may already be closed, interrupted, or it may have
             // never been opened. Should not affect application or resources.
+            LOG.warning("Cannot close Socket input stream connection.");
         }
         try
         {
@@ -143,6 +160,7 @@ public class ChatConnection implements Runnable
         {
             // If unable to shutdown connection to output stream, it may already be closed, interrupted, or it may have
             // never been opened. Should not affect application or resources.
+            LOG.warning("Cannot close Socket output stream connection.");
         }
         try
         {
@@ -152,6 +170,7 @@ public class ChatConnection implements Runnable
         {
             // If unable to close socket, it may already be closed, interrupted, or it may have never been opened.
             // Should not affect application or resources.
+            LOG.warning("Cannot close Socket connection.");
         }
         try
         {
@@ -163,6 +182,7 @@ public class ChatConnection implements Runnable
         {
             // If unable to close server socket, it may already be closed, interrupted, or it may have never been
             // opened. Should not affect application or resources.
+            LOG.warning("Cannot close ServerSocket connection.");
         }
     }
 }

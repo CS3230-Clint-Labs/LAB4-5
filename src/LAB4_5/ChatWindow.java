@@ -4,6 +4,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  * This class defines a ChatWindow object.  The ChatWindow object is a GUI application used to exchange messages on a
@@ -15,9 +19,13 @@ import java.io.IOException;
  */
 public class ChatWindow
 {
-    private int serverPortNum; // Integer for storing port number.  Port used for incoming/outgoing streams. Server.
-    private int clientPortNum; // Integer for storing port number.  Port used for incoming/outgoing streams. client.
+    // STATICS
+    private static final Logger LOG = Logger.getLogger(ChatWindow.class.getName());
 
+    // Fields
+    private FileHandler fh;
+    private int serverPortNum; // Integer for storing port number.  Port used for incoming/outgoing streams. Server.
+    private int clientPortNum; // Integer for storing port number.  Port used for incoming/outgoing streams. Client.
     private JFrame mainWindow;  // The main container frame for 'ChatWindow' object.
     private JFrame userServerInputWindow; // The container frame for 'userServerInputPane'. Collect connection info.
     private JPanel mainBackground;  // JPanel that is associated with 'mainWindow'.
@@ -48,6 +56,26 @@ public class ChatWindow
 
     public ChatWindow()
     {
+        // Set Logger Level.
+        LOG.setLevel(Level.INFO);
+
+        // Try to create a new file handler with simple format.
+        try {
+            fh = new FileHandler("src/ChatLogFile.log"); // Choose the file to write.
+            LOG.addHandler(fh); // Add the file handler to the log.
+            SimpleFormatter formatter = new SimpleFormatter(); // Create a formatter for the file handler.
+            fh.setFormatter(formatter); // Add the formater to the file handler.
+
+        }
+        // If user does not have rights to open, notify in console.
+        catch (SecurityException se) {
+            LOG.warning("User does not have rights to open/create the log file.");
+        }
+        // If file cannot be opened, notify in console.
+        catch (IOException e) {
+            LOG.warning("Unable to connect to file.");
+        }
+
         // Initializes a shutdown hook (thread) on this ChatWindow's runtime.  On application close, regardless of
         // normal exit or application interrupt, a thread will start and execute on the below code.
         // Thread closes all incoming and outgoing streams, connections, and sockets.
@@ -55,13 +83,15 @@ public class ChatWindow
                     try{
                         connectChat.closeConnection();
                     }catch (NullPointerException e){
-                        //can't do anything.
+                        // Deal with connection issues in method closeConnection.
+                        LOG.info("Chat connection failed to close properly.");
                     }
                     try{
                         connectClient.closeConnection();
                     }catch (NullPointerException e)
                     {
-                        //can't do anything
+                        // Deal with connection issues in method closeConnection.
+                        LOG.info("Chat connection failed to close properly.");
                     }
                 }});
         // Default IP/Port
@@ -114,7 +144,10 @@ public class ChatWindow
                 try {
                     serverPortNum = Integer.parseInt(new JOptionPane().showInputDialog("Start Server on Port Number:"));
                 } catch (Exception ex) {
+                    LOG.info("Unable to parse integer for port number.  Set to default.");
                     serverPortNum = 8989;
+                    chatDisplay.append("***\nSYSTEM: Invalid port number.\n" +
+                            "Connecting to default port.\n***\n\n");
                 }
 
                 updateConnectionInfo();
@@ -139,6 +172,7 @@ public class ChatWindow
                 }
                 // If unable to store, set portNum to default and notify user in ChatDisplay.
                 catch (Exception ex) {
+                    LOG.info("Unable to parse integer for port number.  Set to default.");
                     clientPortNum = 8989;
                     chatDisplay.append("***\nSYSTEM: Invalid port number.\n" +
                             "Connecting to default port.\n***\n\n");
@@ -339,6 +373,9 @@ public class ChatWindow
                 }
             }catch(Exception e)
             {
+                // No one is listening.  Warn the user that no one is listening.
+                LOG.info("Chat not active.  No one connected to server.");
+
                 this.chatDisplay.append("***\nSYSTEM: Currently no active chat Connections.\n" +
                         "Please use the mainMenu and select Start Connection\n***\n\n");
             }
@@ -402,7 +439,8 @@ public class ChatWindow
             serverIsConnected = true;
             updateConnectionInfo();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.severe("Unable to connect to server. Check security settings and server IP/port information.");
+            serverPortNum = 8989;
         }
     }
 

@@ -4,11 +4,20 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  * Created by Clinton on 6/18/2015.
  */
 public class ClientConnection implements Runnable {
+    // STATICS
+    private static final Logger LOG = Logger.getLogger(ChatWindow.class.getName());
+
+    // Fields
+    private FileHandler fh;
     private Socket OutgoingConnection;
     private DataInputStream input;
     private DataOutputStream sendUserMessage;
@@ -19,9 +28,9 @@ public class ClientConnection implements Runnable {
     /**
      * Allows the construction of a new 'ClientConnection' object.  This object can be treated as a client Connection
      *
-     * @param server - Used as the 'serverIP' connection IP address.
-     * @param port - Used as the pipe for server/client communication.
-     * @param window - A new ChatWindow object used for exchanging messages.
+     * @param serverip - Used as the 'serverIP' connection IP address.
+     * @param portnum - Used as the pipe for server/client communication.
+     * @param cwindow - A new ChatWindow object used for exchanging messages.
      *
      */
 
@@ -59,12 +68,15 @@ public class ClientConnection implements Runnable {
                 }catch (NullPointerException e)
                 {
                     OutgoingConnection.close();
+                    // Close connection due to null pointer.
+                    LOG.info("Null pointer exception. Unable to read input.");
                 }
             }
         }
         catch (Exception e)
         {
-            //don't care
+            // Server was unable to make socket connection on port. Nothing can be done.
+            LOG.info("Socket connection error.");
         }
     }
 
@@ -77,6 +89,7 @@ public class ClientConnection implements Runnable {
             this.sendUserMessage.flush();
         }catch(IOException e)
         {
+            LOG.severe("Unable to write on outgoing connection.");
             throw e;
         }
 
@@ -89,21 +102,27 @@ public class ClientConnection implements Runnable {
             this.input.close();
         }catch(Exception e)
         {
-            //doesn't matter
+            // If unable to close data stream, it may already be closed, interrupted, or it may have never been opened.
+            // Should not affect application or resources.
+            LOG.warning("Cannot close InputDataStream.");
         }
         try
         {
             this.sendUserMessage.close();
         }catch(Exception e)
         {
-            //don't care about this exception
+            // If unable to close data stream, it may already be closed, interrupted, or it may have never been opened.
+            // Should not affect application or resources.
+            LOG.warning("Cannot close OutputDataStream.");
         }
         try
         {
             this.OutgoingConnection.close();
         }catch(Exception e)
         {
-            //don't care about this exception
+            // If unable to close socket, it may already be closed, interrupted, or it may have never been opened.
+            // Should not affect application or resources.
+            LOG.warning("Cannot close Outgoing connection.");
         }
         window.isClientConnected(false);
 
